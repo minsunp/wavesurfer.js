@@ -83,7 +83,8 @@ export default class MultiCanvas extends Drawer {
                 display: 'none',
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                backgroundColor: this.params.progressBackgroundColor
             })
         );
 
