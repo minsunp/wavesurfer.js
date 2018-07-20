@@ -164,7 +164,8 @@ export default class MultiCanvas extends Drawer {
                     left: leftOffset + 'px',
                     top: 0,
                     bottom: 0,
-                    height: '100%'
+                    height: '100%',
+                    maxWidth: 'none'
                 })
             );
             entry.progressCtx = entry.progress.getContext('2d');

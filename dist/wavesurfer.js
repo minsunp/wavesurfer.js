@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Thu Jul 19 2018 11:54:23 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Thu Jul 19 2018 22:44:23 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -868,7 +868,8 @@ var MultiCanvas = function (_Drawer) {
                     left: leftOffset + 'px',
                     top: 0,
                     bottom: 0,
-                    height: '100%'
+                    height: '100%',
+                    maxWidth: 'none'
                 }));
                 entry.progressCtx = entry.progress.getContext('2d');
             }
