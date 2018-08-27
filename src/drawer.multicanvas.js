@@ -293,15 +293,20 @@ export default class MultiCanvas extends Drawer {
                 for (i = first; i < last; i += step) {
                     const peak =
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
-                    const h = Math.round((peak / absmax) * halfH);
+                    let h = Math.round((peak / absmax) * halfH);
+
                     if (h <= 0) {
-                      h = 5;
+                        h = 1;
                     }
                     this.fillRect(
-                        i + this.halfPixel, // x
-                        halfH - h + offsetY, // y
-                        bar + this.halfPixel, // width
-                        h * 2 // height
+                        i + this.halfPixel,
+                        // x
+                        halfH - h + offsetY,
+                        // y
+                        bar + this.halfPixel,
+                        // width
+                        h * 2
+                        // height
                     );
                 }
             }
@@ -589,7 +594,7 @@ export default class MultiCanvas extends Drawer {
         if (!ctx) {
             return;
         }
-        ctx.fillRect(x, y, width+100, height);
+        ctx.fillRect(x, y, width, height);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Thu Jul 19 2018 22:44:23 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Fri Aug 24 2018 16:13:36 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -122,8 +122,7 @@ return /******/ (function(modules) { // webpackBootstrap
  * @param {Boolean} whether to execute at the beginning (`false`)
  * @api public
  */
-
-module.exports = function debounce(func, wait, immediate){
+function debounce(func, wait, immediate){
   var timeout, args, context, timestamp, result;
   if (null == wait) wait = 100;
 
@@ -174,6 +173,11 @@ module.exports = function debounce(func, wait, immediate){
 
   return debounced;
 };
+
+// Adds compatibility for ES modules
+debounce.debounce = debounce;
+
+module.exports = debounce;
 
 
 /***/ }),
@@ -975,6 +979,7 @@ var MultiCanvas = function (_Drawer) {
         value: function drawBars(peaks, channelIndex, start, end) {
             var _this4 = this;
 
+            console.log('does this even update');
             return this.prepareDraw(peaks, channelIndex, start, end, function (_ref) {
                 var absmax = _ref.absmax,
                     hasMinVals = _ref.hasMinVals,
@@ -1003,7 +1008,16 @@ var MultiCanvas = function (_Drawer) {
                 for (i = first; i < last; i += step) {
                     var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
                     var h = Math.round(peak / absmax * halfH);
-                    _this4.fillRect(i + _this4.halfPixel, halfH - h + offsetY, bar + _this4.halfPixel, h * 2);
+
+                    if (h <= 0) {
+                        console.log('hereeeee');
+                        h = 1;
+                    }
+                    _this4.fillRect(i + _this4.halfPixel, // x
+                    halfH - h + offsetY, // y
+                    bar + _this4.halfPixel, // width
+                    h * 2 // height
+                    );
                 }
             });
         }
@@ -1156,6 +1170,9 @@ var MultiCanvas = function (_Drawer) {
             var startCanvas = Math.floor(x / this.maxCanvasWidth);
             var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
             var i = void 0;
+
+            //
+            // if (startCanvas >= endCanvas)
             for (i = startCanvas; i < endCanvas; i++) {
                 var entry = this.canvases[i];
                 var leftOffset = i * this.maxCanvasWidth;

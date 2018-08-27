@@ -14,7 +14,9 @@ module.exports = {
         browser: true,
         commonjs: true
     },
+
     rules: {
+
         'prettier/prettier': [
             // customizing prettier rules (unfortunately not many of them are customizable)
             'error',
@@ -24,8 +26,10 @@ module.exports = {
                 trailingComma: 'none'
             }
         ],
+
         eqeqeq: 'off',
         'no-console': 'off',
         'no-unused-vars': 'off'
     }
+
 };
