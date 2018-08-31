@@ -295,18 +295,15 @@ export default class MultiCanvas extends Drawer {
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
                     let h = Math.round((peak / absmax) * halfH);
 
+                    // Edited by MinSun
                     if (h <= 0) {
                         h = 1;
                     }
                     this.fillRect(
-                        i + this.halfPixel,
-                        // x
-                        halfH - h + offsetY,
-                        // y
-                        bar + this.halfPixel,
-                        // width
-                        h * 2
-                        // height
+                        i + this.halfPixel, // x
+                        halfH - h + offsetY, // y
+                        bar + this.halfPixel, // width
+                        h * 2 // height
                     );
                 }
             }

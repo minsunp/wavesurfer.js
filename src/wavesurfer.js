@@ -1007,6 +1007,19 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Added by MinSun:
+     * Set the width of the cursor indicating the playhead
+     * position.
+     *
+     * @param {number} cursorWidth A cursor width number.
+     * @example wavesurfer.setCursorWidth(3);
+     */
+    setCursorWidth(cursorWidth) {
+        this.params.cursorWidth = cursorWidth;
+        this.drawer.updateCursor();
+    }
+
+    /**
      * Get the height of the waveform.
      *
      * @return {number} Height measured in pixels.

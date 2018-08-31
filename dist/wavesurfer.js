@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Fri Aug 24 2018 16:13:36 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Aug 29 2018 16:46:10 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -979,7 +979,6 @@ var MultiCanvas = function (_Drawer) {
         value: function drawBars(peaks, channelIndex, start, end) {
             var _this4 = this;
 
-            console.log('does this even update');
             return this.prepareDraw(peaks, channelIndex, start, end, function (_ref) {
                 var absmax = _ref.absmax,
                     hasMinVals = _ref.hasMinVals,
@@ -1010,13 +1009,16 @@ var MultiCanvas = function (_Drawer) {
                     var h = Math.round(peak / absmax * halfH);
 
                     if (h <= 0) {
-                        console.log('hereeeee');
                         h = 1;
                     }
-                    _this4.fillRect(i + _this4.halfPixel, // x
-                    halfH - h + offsetY, // y
-                    bar + _this4.halfPixel, // width
-                    h * 2 // height
+                    _this4.fillRect(i + _this4.halfPixel,
+                    // x
+                    halfH - h + offsetY,
+                    // y
+                    bar + _this4.halfPixel,
+                    // width
+                    h * 2
+                    // height
                     );
                 }
             });
@@ -3800,6 +3802,22 @@ var WaveSurfer = function (_util$Observer) {
         key: 'setCursorColor',
         value: function setCursorColor(color) {
             this.params.cursorColor = color;
+            this.drawer.updateCursor();
+        }
+
+        /**
+         * Added by MinSun:
+         * Set the width of the cursor indicating the playhead
+         * position.
+         *
+         * @param {number} cursorWidth A cursor width number.
+         * @example wavesurfer.setCursorWidth(3);
+         */
+
+    }, {
+        key: 'setCursorWidth',
+        value: function setCursorWidth(cursorWidth) {
+            this.params.cursorWidth = cursorWidth;
             this.drawer.updateCursor();
         }
 
