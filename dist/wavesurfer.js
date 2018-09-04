@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Wed Aug 29 2018 16:46:10 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Tue Sep 04 2018 12:53:16 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -536,6 +536,17 @@ var Drawer = function (_util$Observer) {
         }
 
         /**
+         * Added by MinSun:
+         * Get this.width
+         */
+
+    }, {
+        key: 'getThisWidth',
+        value: function getThisWidth() {
+            return this.width;
+        }
+
+        /**
          * Called by wavesurfer when progress should be renderered
          *
          * @param {number} progress From 0 to 1
@@ -1008,17 +1019,14 @@ var MultiCanvas = function (_Drawer) {
                     var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
                     var h = Math.round(peak / absmax * halfH);
 
+                    // Edited by MinSun
                     if (h <= 0) {
                         h = 1;
                     }
-                    _this4.fillRect(i + _this4.halfPixel,
-                    // x
-                    halfH - h + offsetY,
-                    // y
-                    bar + _this4.halfPixel,
-                    // width
-                    h * 2
-                    // height
+                    _this4.fillRect(i + _this4.halfPixel, // x
+                    halfH - h + offsetY, // y
+                    bar + _this4.halfPixel, // width
+                    h * 2 // height
                     );
                 }
             });
@@ -3215,6 +3223,16 @@ var WaveSurfer = function (_util$Observer) {
         }
 
         /**
+         * Added by MinSun:
+         * Get X-Offset of progress position in pixels
+         */
+
+    }, {
+        key: 'getProgressPos',
+        value: function getProgressPos() {
+            return Math.round(this.backend.getPlayedPercents() * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
+        }
+        /**
          * Create the drawer and draw the waveform
          *
          * @private
@@ -3819,6 +3837,34 @@ var WaveSurfer = function (_util$Observer) {
         value: function setCursorWidth(cursorWidth) {
             this.params.cursorWidth = cursorWidth;
             this.drawer.updateCursor();
+        }
+
+        /**
+         * Added by MinSun:
+         * Get this.params.minPxPerSec
+         *
+         * @example const minPxPerSec = wavesurfer.getMinPxPerSec();
+         * @return {number} Number of horizontal pixels per second of audio
+         */
+
+    }, {
+        key: 'getMinPxPerSec',
+        value: function getMinPxPerSec() {
+            return this.params.minPxPerSec;
+        }
+
+        /**
+         * Added by MinSun:
+         * Get this.params.pixelRatio
+         *
+         * @example const pixelRatio = wavesurfer.getPixelRatio();
+         * @return {number} window.devicePixelRatio: The pixel ratio used to calculate display
+         */
+
+    }, {
+        key: 'getPixelRatio',
+        value: function getPixelRatio() {
+            return this.params.pixelRatio;
         }
 
         /**

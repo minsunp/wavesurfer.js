@@ -294,6 +294,14 @@ export default class Drawer extends util.Observer {
     }
 
     /**
+     * Added by MinSun:
+     * Get this.width
+     */
+    getThisWidth() {
+        return this.width;
+    }
+
+    /**
      * Called by wavesurfer when progress should be renderered
      *
      * @param {number} progress From 0 to 1

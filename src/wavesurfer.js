@@ -528,6 +528,18 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Added by MinSun:
+     * Get X-Offset of progress position in pixels
+     */
+    getProgressPos() {
+        return (
+            Math.round(
+                this.backend.getPlayedPercents() * this.drawer.getWidth()
+            ) *
+            (1 / this.params.pixelRatio)
+        );
+    }
+    /**
      * Create the drawer and draw the waveform
      *
      * @private
@@ -1017,6 +1029,28 @@ export default class WaveSurfer extends util.Observer {
     setCursorWidth(cursorWidth) {
         this.params.cursorWidth = cursorWidth;
         this.drawer.updateCursor();
+    }
+
+    /**
+     * Added by MinSun:
+     * Get this.params.minPxPerSec
+     *
+     * @example const minPxPerSec = wavesurfer.getMinPxPerSec();
+     * @return {number} Number of horizontal pixels per second of audio
+     */
+    getMinPxPerSec() {
+        return this.params.minPxPerSec;
+    }
+
+    /**
+     * Added by MinSun:
+     * Get this.params.pixelRatio
+     *
+     * @example const pixelRatio = wavesurfer.getPixelRatio();
+     * @return {number} window.devicePixelRatio: The pixel ratio used to calculate display
+     */
+    getPixelRatio() {
+        return this.params.pixelRatio;
     }
 
     /**
