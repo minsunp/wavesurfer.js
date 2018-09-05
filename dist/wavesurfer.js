@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Tue Sep 04 2018 12:53:16 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Tue Sep 04 2018 15:43:46 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -1181,8 +1181,6 @@ var MultiCanvas = function (_Drawer) {
             var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
             var i = void 0;
 
-            //
-            // if (startCanvas >= endCanvas)
             for (i = startCanvas; i < endCanvas; i++) {
                 var entry = this.canvases[i];
                 var leftOffset = i * this.maxCanvasWidth;
@@ -1287,6 +1285,7 @@ var MultiCanvas = function (_Drawer) {
         }
 
         /**
+         * Edited by MinSun:
          * Set the fill styles for a certain entry (wave and progress)
          *
          * @private
@@ -1296,9 +1295,11 @@ var MultiCanvas = function (_Drawer) {
     }, {
         key: 'setFillStyles',
         value: function setFillStyles(entry) {
-            entry.waveCtx.fillStyle = this.params.waveColor;
+            // entry.waveCtx.fillStyle = this.params.waveColor;
+            entry.waveCtx.fillStyle = '#eb42f4';
             if (this.hasProgressCanvas) {
-                entry.progressCtx.fillStyle = this.params.progressColor;
+                // entry.progressCtx.fillStyle = this.params.progressColor;
+                entry.progressCtx.fillStyle = '#f24a3e';
             }
         }
 

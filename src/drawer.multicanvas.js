@@ -480,8 +480,6 @@ export default class MultiCanvas extends Drawer {
         );
         let i;
 
-        //
-        // if (startCanvas >= endCanvas)
         for (i = startCanvas; i < endCanvas; i++) {
             const entry = this.canvases[i];
             const leftOffset = i * this.maxCanvasWidth;
@@ -595,15 +593,18 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
+     * Edited by MinSun:
      * Set the fill styles for a certain entry (wave and progress)
      *
      * @private
      * @param {CanvasEntry} entry
      */
     setFillStyles(entry) {
-        entry.waveCtx.fillStyle = this.params.waveColor;
+        // entry.waveCtx.fillStyle = this.params.waveColor;
+        entry.waveCtx.fillStyle = '#eb42f4';
         if (this.hasProgressCanvas) {
-            entry.progressCtx.fillStyle = this.params.progressColor;
+            // entry.progressCtx.fillStyle = this.params.progressColor;
+            entry.progressCtx.fillStyle = '#f24a3e';
         }
     }
 
