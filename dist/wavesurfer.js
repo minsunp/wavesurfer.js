@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Tue Sep 04 2018 15:43:46 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Sep 05 2018 14:48:48 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -3231,6 +3231,7 @@ var WaveSurfer = function (_util$Observer) {
     }, {
         key: 'getProgressPos',
         value: function getProgressPos() {
+            console.log(this.backend.getPlayedPercents());
             return Math.round(this.backend.getPlayedPercents() * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
         }
         /**

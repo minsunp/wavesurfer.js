@@ -529,6 +529,19 @@ export default class WaveSurfer extends util.Observer {
 
     /**
      * Added by MinSun:
+     * Convert played percent into x-offset of progress position in pixels
+     */
+    percentToProgressPos(percent) {
+      return (
+          Math.round(
+              percent * this.drawer.getWidth()
+          ) *
+          (1 / this.params.pixelRatio)
+      );
+    }
+
+    /**
+     * Added by MinSun:
      * Get X-Offset of progress position in pixels
      */
     getProgressPos() {
@@ -539,6 +552,7 @@ export default class WaveSurfer extends util.Observer {
             (1 / this.params.pixelRatio)
         );
     }
+
     /**
      * Create the drawer and draw the waveform
      *
@@ -555,7 +569,7 @@ export default class WaveSurfer extends util.Observer {
             window.addEventListener('orientationchange', this._onResize, true);
         }
 
-        this.drawer.on('redraw', () => {
+        this.drawer.on('redraw', () => { // MinSun: progress waveform updated here
             this.drawBuffer();
             this.drawer.progress(this.backend.getPlayedPercents());
         });
@@ -1076,6 +1090,7 @@ export default class WaveSurfer extends util.Observer {
 
     /**
      * Get the correct peaks for current wave viewport and render wave
+     * Edited by MinSun
      *
      * @private
      * @emits WaveSurfer#redraw
@@ -1088,20 +1103,21 @@ export default class WaveSurfer extends util.Observer {
         );
         const parentWidth = this.drawer.getWidth();
         let width = nominalWidth;
-        let start = this.drawer.getScrollX();
-        let end = Math.max(start + parentWidth, width);
+        let start = this.drawer.getScrollX(); // current cursor position
+        let end = Math.max(start + parentWidth, width); // end of canvas
         // Fill container
         if (
             this.params.fillParent &&
             (!this.params.scrollParent || nominalWidth < parentWidth)
         ) {
+            // MinSun: client's waveform gets here.
             width = parentWidth;
             start = 0;
             end = width;
         }
 
         let peaks;
-        if (this.params.partialRender) {
+        if (this.params.partialRender) { // MinSun: not applicable in client project
             const newRanges = this.peakCache.addRangeToPeakCache(
                 width,
                 start,
@@ -1118,12 +1134,16 @@ export default class WaveSurfer extends util.Observer {
                     peaks,
                     width,
                     newRanges[i][0],
-                    newRanges[i][1]
+                    newRanges[i][1],
+                    [0] // MinSun: dummy value here bc our client code doesn't get here
                 );
             }
-        } else {
+        } else { // MinSun: client's waveform gets here!!!
             peaks = this.backend.getPeaks(width, start, end);
-            this.drawer.drawPeaks(peaks, width, start, end);
+             // MinSun: need to provide real doctorsRange value here b/c
+             // drawBuffer() is used everywhere and I don't want to change everything.
+             // Let's put dummy value for now.
+            this.drawer.drawPeaks(peaks, width, start, end, [0, 2, 5, 10, 15, 18]);
         }
         this.fireEvent('redraw', peaks, width);
     }
@@ -1501,6 +1521,7 @@ export default class WaveSurfer extends util.Observer {
         this.clearTmpEvents();
         this.drawer.progress(0);
         this.drawer.setWidth(0);
+        // MinSun: how does this work? with just two parameters?
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     }
 

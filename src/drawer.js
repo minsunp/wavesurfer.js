@@ -149,14 +149,18 @@ export default class Drawer extends util.Observer {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
+     * @param {number[]} doctorsRange List of points that divide doctors' part and
+     * patient's speaking (in seconds)
+     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] seconds.
+     * The rest is patient speaking.
      */
-    drawPeaks(peaks, length, start, end) {
+    drawPeaks(peaks, length, start, end, doctorsRange) {
         if (!this.setWidth(length)) {
             this.clearWave();
         }
 
         this.params.barWidth
-            ? this.drawBars(peaks, 0, start, end)
+            ? this.drawBars(peaks, 0, start, end, doctorsRange)
             : this.drawWave(peaks, 0, start, end);
     }
 
@@ -363,8 +367,12 @@ export default class Drawer extends util.Observer {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
+     * @param {number[]} doctorsRange List of points that divide doctors' part and
+     * patient's speaking (in seconds)
+     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] seconds.
+     * The rest is patient speaking.
      */
-    drawBars(peaks, channelIndex, start, end) {}
+    drawBars(peaks, channelIndex, start, end, doctorsRange) {}
 
     /**
      * Draw a waveform

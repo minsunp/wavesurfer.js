@@ -54,7 +54,11 @@ export default class MultiCanvas extends Drawer {
          */
         this.canvases = [];
         /** @private */
-        this.progressWave = null;
+        this.progressWave = null; // doctor's progress part
+        /** @private */
+        this.patientWave = null; // patient's part
+        /** @private */
+        this.patientProgressWave = null; // patient's progress part
     }
 
     /**
@@ -67,11 +71,44 @@ export default class MultiCanvas extends Drawer {
 
     /**
      * Create the canvas elements and style them
+     * MinSun: initialized patientWave and patientProgressWave
      *
      * @private
      */
     createElements() {
         this.progressWave = this.wrapper.appendChild(
+            this.style(document.createElement('wave'), {
+                position: 'absolute',
+                zIndex: 3,
+                left: 0,
+                top: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                width: '0',
+                display: 'none',
+                boxSizing: 'border-box',
+                borderRightStyle: 'solid',
+                pointerEvents: 'none',
+                backgroundColor: this.params.progressBackgroundColor
+            })
+        );
+        this.patientWave = this.wrapper.appendChild(
+            this.style(document.createElement('wave'), {
+                position: 'absolute',
+                zIndex: 2,
+                left: 0,
+                top: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                width: '0',
+                display: 'none',
+                boxSizing: 'border-box',
+                borderRightStyle: 'solid',
+                pointerEvents: 'none',
+                // backgroundColor: this.params.progressBackgroundColor
+            })
+        );
+        this.patientProgressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
                 position: 'absolute',
                 zIndex: 3,
@@ -137,6 +174,7 @@ export default class MultiCanvas extends Drawer {
 
     /**
      * Add a canvas to the canvas list
+     * MinSun: added canvases for patient's waves.
      *
      * @private
      */
@@ -144,6 +182,7 @@ export default class MultiCanvas extends Drawer {
         const entry = {};
         const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
+        // Default wave - for doctor's part
         entry.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
@@ -157,6 +196,7 @@ export default class MultiCanvas extends Drawer {
         );
         entry.waveCtx = entry.wave.getContext('2d');
 
+        // Progress wave - for doctor's part
         if (this.hasProgressCanvas) {
             entry.progress = this.progressWave.appendChild(
                 this.style(document.createElement('canvas'), {
@@ -171,19 +211,50 @@ export default class MultiCanvas extends Drawer {
             entry.progressCtx = entry.progress.getContext('2d');
         }
 
+        // Default wave - for patient's part
+        entry.patientWave = this.patientWave.appendChild(
+            this.style(document.createElement('canvas'), {
+                position: 'absolute',
+                zIndex: 2,
+                left: leftOffset + 'px',
+                top: 0,
+                bottom: 0,
+                height: '100%',
+                pointerEvents: 'none'
+            })
+        );
+        entry.patientWaveCtx = entry.patientWave.getContext('2d');
+
+        // Progress wave - for patient's part
+        if (this.hasProgressCanvas) {
+            entry.patientProgress = this.patientProgressWave.appendChild(
+                this.style(document.createElement('canvas'), {
+                    position: 'absolute',
+                    left: leftOffset + 'px',
+                    top: 0,
+                    bottom: 0,
+                    height: '100%',
+                    maxWidth: 'none'
+                })
+            );
+            entry.patientProgressCtx = entry.patientProgress.getContext('2d');
+        }
+
         this.canvases.push(entry);
     }
 
     /**
      * Pop one canvas from the list
+     * MinSun: pop patient's canvas too.
      *
      * @private
      */
     removeCanvas() {
         const lastEntry = this.canvases.pop();
         lastEntry.wave.parentElement.removeChild(lastEntry.wave);
+        lastEntry.patientWave.parentElement.removeChild(lastEntry.patientWave);
         if (this.hasProgressCanvas) {
-            lastEntry.progress.parentElement.removeChild(lastEntry.progress);
+            lastEntry.patientProgress.parentElement.removeChild(lastEntry.patientProgress);
         }
     }
 
@@ -227,6 +298,7 @@ export default class MultiCanvas extends Drawer {
 
     /**
      * Clear one canvas
+     * MinSun: clear patient canvas too.
      *
      * @private
      * @param {CanvasEntry} entry
@@ -238,6 +310,12 @@ export default class MultiCanvas extends Drawer {
             entry.waveCtx.canvas.width,
             entry.waveCtx.canvas.height
         );
+        entry.patientWaveCtx.clearRect(
+            0,
+            0,
+            entry.patientWaveCtx.canvas.width,
+            entry.patientWaveCtx.canvas.height
+        );
         if (this.hasProgressCanvas) {
             entry.progressCtx.clearRect(
                 0,
@@ -246,10 +324,24 @@ export default class MultiCanvas extends Drawer {
                 entry.progressCtx.canvas.height
             );
         }
+        if (this.hasProgressCanvas) {
+            entry.patientProgressCtx.clearRect(
+                0,
+                0,
+                entry.patientProgressCtx.canvas.width,
+                entry.patientProgressCtx.canvas.height
+            );
+        }
     }
 
     /**
      * Draw a waveform with bars
+     *
+     * Edited by MinSun.
+     * Alter this; take in an array of starts & ends and loop through to render bars:
+     * Also take in a second parameter - for patient's color.
+     * As long as barWidth exists when we declare WaveSurfer instance in client,
+     * we only need to change this. Otherwise, alter drawWave().
      *
      * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
      * rendering
@@ -259,8 +351,12 @@ export default class MultiCanvas extends Drawer {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
+     * @param {number[]} doctorsRange List of points that divide doctors' part and
+     * patient's speaking (in seconds)
+     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] seconds.
+     * The rest is patient speaking.
      */
-    drawBars(peaks, channelIndex, start, end) {
+    drawBars(peaks, channelIndex, start, end, doctorsRange) {
         return this.prepareDraw(
             peaks,
             channelIndex,
@@ -286,10 +382,12 @@ export default class MultiCanvas extends Drawer {
                 const step = bar + gap;
 
                 const scale = length / this.width;
+
                 const first = start;
                 const last = end;
                 let i;
 
+                // Draw bars one by one
                 for (i = first; i < last; i += step) {
                     const peak =
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
@@ -300,9 +398,10 @@ export default class MultiCanvas extends Drawer {
                         h = 1;
                     }
                     this.fillRect(
-                        i + this.halfPixel, // x
+                        // halfPixel = 1 / (2 * params.pixelRatio)
+                        i + this.halfPixel, // x = start of current bar
                         halfH - h + offsetY, // y
-                        bar + this.halfPixel, // width
+                        bar + this.halfPixel, // width = bar width
                         h * 2 // height
                     );
                 }
@@ -467,9 +566,9 @@ export default class MultiCanvas extends Drawer {
     /**
      * Draw a rectangle on the waveform
      *
-     * @param {number} x
+     * @param {number} x // starting position of current bar
      * @param {number} y
-     * @param {number} width
+     * @param {number} width // single bar width
      * @param {number} height
      */
     fillRect(x, y, width, height) {
@@ -495,8 +594,12 @@ export default class MultiCanvas extends Drawer {
             };
 
             if (intersection.x1 < intersection.x2) {
+                // Coloring - separated from drawing the rectangles
                 this.setFillStyles(entry);
 
+                // Drawing the rectangles - on both wave and progress canvases, and
+                // only the coloring decides which one is visible.
+                // Edit here: draw the rectangles for patientWave and patientProgress as well.
                 this.fillRectToContext(
                     entry.waveCtx,
                     intersection.x1 - leftOffset,
@@ -576,7 +679,7 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Draw the actual rectangle on a canvas
+     * Draw the actual rectangle on a canvas - this doesn't color anything!
      *
      * @private
      * @param {Canvas2DContextAttributes} ctx
