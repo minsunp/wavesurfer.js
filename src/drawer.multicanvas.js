@@ -81,9 +81,10 @@ export default class MultiCanvas extends Drawer {
      */
     createElements() {
         this.progressWave = this.wrapper.appendChild(
+            // for doctor part
             this.style(document.createElement('wave'), {
                 position: 'absolute',
-                zIndex: 3,
+                zIndex: 4,
                 left: 0,
                 top: 0,
                 bottom: 0,
@@ -92,8 +93,8 @@ export default class MultiCanvas extends Drawer {
                 display: 'none',
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
-                pointerEvents: 'none',
-                backgroundColor: this.params.progressBackgroundColor
+                pointerEvents: 'none'
+                // backgroundColor: this.params.progressBackgroundColor
             })
         );
         this.patientWave = this.wrapper.appendChild(
@@ -107,7 +108,7 @@ export default class MultiCanvas extends Drawer {
         );
         this.patientProgressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
-                position: 'absolute', // make is absolute
+                position: 'absolute',
                 zIndex: 3,
                 left: 0,
                 top: 0,

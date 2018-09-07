@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Fri Sep 07 2018 15:16:48 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Fri Sep 07 2018 15:52:58 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -806,9 +806,11 @@ var MultiCanvas = function (_Drawer) {
     }, {
         key: 'createElements',
         value: function createElements() {
-            this.progressWave = this.wrapper.appendChild(this.style(document.createElement('wave'), {
+            this.progressWave = this.wrapper.appendChild(
+            // for doctor part
+            this.style(document.createElement('wave'), {
                 position: 'absolute',
-                zIndex: 3,
+                zIndex: 4,
                 left: 0,
                 top: 0,
                 bottom: 0,
@@ -817,8 +819,8 @@ var MultiCanvas = function (_Drawer) {
                 display: 'none',
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
-                pointerEvents: 'none',
-                backgroundColor: this.params.progressBackgroundColor
+                pointerEvents: 'none'
+                // backgroundColor: this.params.progressBackgroundColor
             }));
             this.patientWave = this.wrapper.appendChild(this.style(document.createElement('wave'), {
                 display: 'block',
@@ -828,7 +830,7 @@ var MultiCanvas = function (_Drawer) {
                 height: this.params.height + 'px'
             }));
             this.patientProgressWave = this.wrapper.appendChild(this.style(document.createElement('wave'), {
-                position: 'absolute', // make is absolute
+                position: 'absolute',
                 zIndex: 3,
                 left: 0,
                 top: 0,
