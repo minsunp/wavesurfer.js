@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Wed Sep 05 2018 14:48:48 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Fri Sep 07 2018 15:16:48 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -372,16 +372,20 @@ var Drawer = function (_util$Observer) {
          * should be rendered
          * @param {number} end The x-offset of the end of the area that should be
          * rendered
+         * @param {number[]} doctorsRangePix List of points that divide doctors' part and
+         * patient's speaking (in pixels)
+         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+         * The rest is patient speaking.
          */
 
     }, {
         key: 'drawPeaks',
-        value: function drawPeaks(peaks, length, start, end) {
+        value: function drawPeaks(peaks, length, start, end, doctorsRangePix) {
             if (!this.setWidth(length)) {
                 this.clearWave();
             }
 
-            this.params.barWidth ? this.drawBars(peaks, 0, start, end) : this.drawWave(peaks, 0, start, end);
+            this.params.barWidth ? this.drawBars(peaks, 0, start, end, doctorsRangePix) : this.drawWave(peaks, 0, start, end);
         }
 
         /**
@@ -620,11 +624,15 @@ var Drawer = function (_util$Observer) {
          * should be rendered
          * @param {number} end The x-offset of the end of the area that should be
          * rendered
+         * @param {number[]} doctorsRangePix List of points that divide doctors' part and
+         * patient's speaking (in seconds)
+         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+         * The rest is patient speaking.
          */
 
     }, {
         key: 'drawBars',
-        value: function drawBars(peaks, channelIndex, start, end) {}
+        value: function drawBars(peaks, channelIndex, start, end, doctorsRangePix) {}
 
         /**
          * Draw a waveform
@@ -716,6 +724,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
  * @property {?HTMLElement} progress The progress wave node
  * @property {?CanvasRenderingContext2D} progressCtx The progress wave canvas
  * rendering context
+ * @property {HTMLElement} patientWave The patient wave node
+ * @property {CanvasRenderingContext2D} patientWaveCtx The patient canvas rendering context
+ * @property {?HTMLElement} patientProgress The patient progress wave node
+ * @property {?CanvasRenderingContext2D} patientProgressCtx The patient progress wave canvas
  * @property {?number} start Start of the area the canvas should render, between 0 and 1
  * @property {?number} end End of the area the canvas should render, between 0 and 1
  */
@@ -764,7 +776,11 @@ var MultiCanvas = function (_Drawer) {
          */
         _this.canvases = [];
         /** @private */
-        _this.progressWave = null;
+        _this.progressWave = null; // doctor's progress part
+        /** @private */
+        _this.patientWave = null; // patient's part
+        /** @private */
+        _this.patientProgressWave = null; // patient's progress part
         return _this;
     }
 
@@ -782,6 +798,7 @@ var MultiCanvas = function (_Drawer) {
 
         /**
          * Create the canvas elements and style them
+         * MinSun: initialized patientWave and patientProgressWave
          *
          * @private
          */
@@ -791,6 +808,27 @@ var MultiCanvas = function (_Drawer) {
         value: function createElements() {
             this.progressWave = this.wrapper.appendChild(this.style(document.createElement('wave'), {
                 position: 'absolute',
+                zIndex: 3,
+                left: 0,
+                top: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                width: '0',
+                display: 'none',
+                boxSizing: 'border-box',
+                borderRightStyle: 'solid',
+                pointerEvents: 'none',
+                backgroundColor: this.params.progressBackgroundColor
+            }));
+            this.patientWave = this.wrapper.appendChild(this.style(document.createElement('wave'), {
+                display: 'block',
+                position: 'relative',
+                userSelect: 'none',
+                webkitUserSelect: 'none',
+                height: this.params.height + 'px'
+            }));
+            this.patientProgressWave = this.wrapper.appendChild(this.style(document.createElement('wave'), {
+                position: 'absolute', // make is absolute
                 zIndex: 3,
                 left: 0,
                 top: 0,
@@ -856,6 +894,7 @@ var MultiCanvas = function (_Drawer) {
 
         /**
          * Add a canvas to the canvas list
+         * MinSun: added canvases for patient's waves.
          *
          * @private
          */
@@ -866,6 +905,7 @@ var MultiCanvas = function (_Drawer) {
             var entry = {};
             var leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
+            // Default wave - for doctor's part
             entry.wave = this.wrapper.appendChild(this.style(document.createElement('canvas'), {
                 position: 'absolute',
                 zIndex: 2,
@@ -877,6 +917,7 @@ var MultiCanvas = function (_Drawer) {
             }));
             entry.waveCtx = entry.wave.getContext('2d');
 
+            // Progress wave - for doctor's part
             if (this.hasProgressCanvas) {
                 entry.progress = this.progressWave.appendChild(this.style(document.createElement('canvas'), {
                     position: 'absolute',
@@ -889,11 +930,37 @@ var MultiCanvas = function (_Drawer) {
                 entry.progressCtx = entry.progress.getContext('2d');
             }
 
+            // Default wave - for patient's part
+            entry.patientWave = this.patientWave.appendChild(this.style(document.createElement('canvas'), {
+                position: 'absolute',
+                zIndex: 2,
+                left: leftOffset + 'px',
+                top: 0,
+                bottom: 0,
+                height: '100%',
+                pointerEvents: 'none'
+            }));
+            entry.patientWaveCtx = entry.patientWave.getContext('2d');
+
+            // Progress wave - for patient's part
+            if (this.hasProgressCanvas) {
+                entry.patientProgress = this.patientProgressWave.appendChild(this.style(document.createElement('canvas'), {
+                    position: 'absolute',
+                    left: leftOffset + 'px',
+                    top: 0,
+                    bottom: 0,
+                    height: '100%',
+                    maxWidth: 'none'
+                }));
+                entry.patientProgressCtx = entry.patientProgress.getContext('2d');
+            }
+
             this.canvases.push(entry);
         }
 
         /**
          * Pop one canvas from the list
+         * MinSun: pop patient's canvas too.
          *
          * @private
          */
@@ -903,13 +970,16 @@ var MultiCanvas = function (_Drawer) {
         value: function removeCanvas() {
             var lastEntry = this.canvases.pop();
             lastEntry.wave.parentElement.removeChild(lastEntry.wave);
+            lastEntry.patientWave.parentElement.removeChild(lastEntry.patientWave);
             if (this.hasProgressCanvas) {
                 lastEntry.progress.parentElement.removeChild(lastEntry.progress);
+                lastEntry.patientProgress.parentElement.removeChild(lastEntry.patientProgress);
             }
         }
 
         /**
          * Update the dimensions of a canvas element
+         * MinSun: update dimensions for patient's waves too.
          *
          * @private
          * @param {CanvasEntry} entry
@@ -931,6 +1001,12 @@ var MultiCanvas = function (_Drawer) {
             entry.waveCtx.canvas.height = height;
             this.style(entry.waveCtx.canvas, { width: elementWidth + 'px' });
 
+            // Added by MinSun START:
+            entry.patientWaveCtx.canvas.width = width;
+            entry.patientWaveCtx.canvas.height = height;
+            this.style(entry.patientWaveCtx.canvas, { width: elementWidth + 'px' });
+            // ENDS here.
+
             this.style(this.progressWave, { display: 'block' });
 
             if (this.hasProgressCanvas) {
@@ -940,6 +1016,18 @@ var MultiCanvas = function (_Drawer) {
                     width: elementWidth + 'px'
                 });
             }
+
+            // Added by MinSun START:
+            this.style(this.patientProgressWave, { display: 'block' });
+
+            if (this.hasProgressCanvas) {
+                entry.patientProgressCtx.canvas.width = width;
+                entry.patientProgressCtx.canvas.height = height;
+                this.style(entry.patientProgressCtx.canvas, {
+                    width: elementWidth + 'px'
+                });
+            }
+            // ENDS here.
         }
 
         /**
@@ -958,6 +1046,7 @@ var MultiCanvas = function (_Drawer) {
 
         /**
          * Clear one canvas
+         * MinSun: clear patient canvas too.
          *
          * @private
          * @param {CanvasEntry} entry
@@ -967,13 +1056,23 @@ var MultiCanvas = function (_Drawer) {
         key: 'clearWaveForEntry',
         value: function clearWaveForEntry(entry) {
             entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
+            entry.patientWaveCtx.clearRect(0, 0, entry.patientWaveCtx.canvas.width, entry.patientWaveCtx.canvas.height);
             if (this.hasProgressCanvas) {
                 entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
+            }
+            if (this.hasProgressCanvas) {
+                entry.patientProgressCtx.clearRect(0, 0, entry.patientProgressCtx.canvas.width, entry.patientProgressCtx.canvas.height);
             }
         }
 
         /**
          * Draw a waveform with bars
+         *
+         * Edited by MinSun.
+         * Alter this; take in an array of starts & ends and loop through to render bars:
+         * Also take in a second parameter - for patient's color.
+         * As long as barWidth exists when we declare WaveSurfer instance in client,
+         * we only need to change this. Otherwise, alter drawWave().
          *
          * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
          * rendering
@@ -983,14 +1082,19 @@ var MultiCanvas = function (_Drawer) {
          * should be rendered
          * @param {number} end The x-offset of the end of the area that should be
          * rendered
+         * @param {number[]} doctorsRangePix List of points that divide doctors' part and
+         * patient's speaking (in pixels)
+         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+         * The rest is patient speaking.
          */
 
     }, {
         key: 'drawBars',
-        value: function drawBars(peaks, channelIndex, start, end) {
+        value: function drawBars(peaks, channelIndex, start, end, doctorsRangePix) {
             var _this4 = this;
 
-            return this.prepareDraw(peaks, channelIndex, start, end, function (_ref) {
+            return this.prepareDraw(peaks, channelIndex, start, // MinSun: not sure how this start/end will be used in prepareDraw
+            end, function (_ref) {
                 var absmax = _ref.absmax,
                     hasMinVals = _ref.hasMinVals,
                     height = _ref.height,
@@ -1011,29 +1115,63 @@ var MultiCanvas = function (_Drawer) {
                 var step = bar + gap;
 
                 var scale = length / _this4.width;
+
                 var first = start;
                 var last = end;
                 var i = void 0;
+
+                // Draw bars one by one
+                // MinSun: start editing here. doctorsRangePix = [1.2, 2, 5, 10, 15, 18]
+
+                // TRUE if doctorsRangePix[drInx] ends the doctor's range
+                var inDoctorsRange = false;
+                var drInd = 0;
 
                 for (i = first; i < last; i += step) {
                     var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
                     var h = Math.round(peak / absmax * halfH);
 
-                    // Edited by MinSun
+                    // Draw dots in silent parts
                     if (h <= 0) {
                         h = 1;
                     }
-                    _this4.fillRect(i + _this4.halfPixel, // x
-                    halfH - h + offsetY, // y
-                    bar + _this4.halfPixel, // width
-                    h * 2 // height
-                    );
+
+                    // Time to update drInd
+                    if (i > doctorsRangePix[drInd]) {
+                        if (drInd < doctorsRangePix.length) {
+                            drInd++;
+                            inDoctorsRange = !inDoctorsRange;
+                        }
+                    }
+                    // We can draw the bars now.
+                    if (inDoctorsRange) {
+                        // Draw the DOCTOR's parts
+                        _this4.fillRect(
+                        // halfPixel = 1 / (2 * params.pixelRatio)
+                        i + _this4.halfPixel, // x = start of current bar
+                        halfH - h + offsetY, // y
+                        bar + _this4.halfPixel, // width = bar width
+                        h * 2, // height
+                        true // drawDoctor
+                        );
+                    } else {
+                        // Draw the PATIENT's parts
+                        _this4.fillRect(
+                        // halfPixel = 1 / (2 * params.pixelRatio)
+                        i + _this4.halfPixel, // x = start of current bar
+                        halfH - h + offsetY, // y
+                        bar + _this4.halfPixel, // width = bar width
+                        h * 2, // height
+                        false // drawDoctor
+                        );
+                    }
                 }
             });
         }
 
         /**
          * Draw a waveform
+         * MinSun: ignore this part. client never reaches here.
          *
          * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
          * rendering
@@ -1076,12 +1214,15 @@ var MultiCanvas = function (_Drawer) {
                 }
 
                 // Always draw a median line
-                _this5.fillRect(0, halfH + offsetY - _this5.halfPixel, _this5.width, _this5.halfPixel);
+                _this5.fillRect(0, halfH + offsetY - _this5.halfPixel, _this5.width, _this5.halfPixel
+                // MinSun: technically need a last ctx parameter here but our client code doesn't get here.
+                );
             });
         }
 
         /**
          * Tell the canvas entries to render their portion of the waveform
+         * MinSun: ignore this part. client never reaches here.
          *
          * @private
          * @param {number[]} peaks Peak data
@@ -1108,6 +1249,7 @@ var MultiCanvas = function (_Drawer) {
 
         /**
          * Render the actual waveform line on a canvas
+         * MinSun: ignore this part. client never reaches here.
          *
          * @private
          * @param {CanvasEntry} entry
@@ -1168,15 +1310,16 @@ var MultiCanvas = function (_Drawer) {
         /**
          * Draw a rectangle on the waveform
          *
-         * @param {number} x
+         * @param {number} x // starting position of current bar
          * @param {number} y
-         * @param {number} width
+         * @param {number} width // single bar width
          * @param {number} height
+         * @param {boolean} drawDoctor // true if we're drawing doctor's part
          */
 
     }, {
         key: 'fillRect',
-        value: function fillRect(x, y, width, height) {
+        value: function fillRect(x, y, width, height, drawDoctor) {
             var startCanvas = Math.floor(x / this.maxCanvasWidth);
             var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
             var i = void 0;
@@ -1193,11 +1336,18 @@ var MultiCanvas = function (_Drawer) {
                 };
 
                 if (intersection.x1 < intersection.x2) {
+                    // Coloring - separated from drawing the rectangles
                     this.setFillStyles(entry);
 
-                    this.fillRectToContext(entry.waveCtx, intersection.x1 - leftOffset, intersection.y1, intersection.x2 - intersection.x1, intersection.y2 - intersection.y1);
-
-                    this.fillRectToContext(entry.progressCtx, intersection.x1 - leftOffset, intersection.y1, intersection.x2 - intersection.x1, intersection.y2 - intersection.y1);
+                    // Drawing the rectangles - on both wave and progress canvases
+                    // MinSun: Edit here
+                    if (drawDoctor) {
+                        this.fillRectToContext(entry.waveCtx, intersection.x1 - leftOffset, intersection.y1, intersection.x2 - intersection.x1, intersection.y2 - intersection.y1);
+                        this.fillRectToContext(entry.progressCtx, intersection.x1 - leftOffset, intersection.y1, intersection.x2 - intersection.x1, intersection.y2 - intersection.y1);
+                    } else {
+                        this.fillRectToContext(entry.patientWaveCtx, intersection.x1 - leftOffset, intersection.y1, intersection.x2 - intersection.x1, intersection.y2 - intersection.y1);
+                        this.fillRectToContext(entry.patientProgressCtx, intersection.x1 - leftOffset, intersection.y1, intersection.x2 - intersection.x1, intersection.y2 - intersection.y1);
+                    }
                 }
             }
         }
@@ -1265,7 +1415,7 @@ var MultiCanvas = function (_Drawer) {
         }
 
         /**
-         * Draw the actual rectangle on a canvas
+         * Draw the actual rectangle on a canvas - this doesn't color anything!
          *
          * @private
          * @param {Canvas2DContextAttributes} ctx
@@ -1295,11 +1445,11 @@ var MultiCanvas = function (_Drawer) {
     }, {
         key: 'setFillStyles',
         value: function setFillStyles(entry) {
-            // entry.waveCtx.fillStyle = this.params.waveColor;
-            entry.waveCtx.fillStyle = '#eb42f4';
+            entry.waveCtx.fillStyle = this.params.waveColor;
+            entry.patientWaveCtx.fillStyle = '#eb42f4';
             if (this.hasProgressCanvas) {
-                // entry.progressCtx.fillStyle = this.params.progressColor;
-                entry.progressCtx.fillStyle = '#f24a3e';
+                entry.progressCtx.fillStyle = this.params.progressColor;
+                entry.patientProgressCtx.fillStyle = '#f24a3e';
             }
         }
 
@@ -1330,6 +1480,7 @@ var MultiCanvas = function (_Drawer) {
         key: 'updateProgress',
         value: function updateProgress(position) {
             this.style(this.progressWave, { width: position + 'px' });
+            this.style(this.patientProgressWave, { width: position + 'px' });
         }
     }]);
 
@@ -3225,15 +3376,26 @@ var WaveSurfer = function (_util$Observer) {
 
         /**
          * Added by MinSun:
+         * Convert played percent into x-offset of progress position in pixels
+         */
+
+    }, {
+        key: 'percentToProgressPos',
+        value: function percentToProgressPos(percent) {
+            return Math.round(percent * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
+        }
+
+        /**
+         * Added by MinSun:
          * Get X-Offset of progress position in pixels
          */
 
     }, {
         key: 'getProgressPos',
         value: function getProgressPos() {
-            console.log(this.backend.getPlayedPercents());
             return Math.round(this.backend.getPlayedPercents() * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
         }
+
         /**
          * Create the drawer and draw the waveform
          *
@@ -3256,6 +3418,7 @@ var WaveSurfer = function (_util$Observer) {
             }
 
             this.drawer.on('redraw', function () {
+                // MinSun: progress waveform updated here
                 _this5.drawBuffer();
                 _this5.drawer.progress(_this5.backend.getPlayedPercents());
             });
@@ -3898,6 +4061,7 @@ var WaveSurfer = function (_util$Observer) {
 
         /**
          * Get the correct peaks for current wave viewport and render wave
+         * Edited by MinSun
          *
          * @private
          * @emits WaveSurfer#redraw
@@ -3909,10 +4073,11 @@ var WaveSurfer = function (_util$Observer) {
             var nominalWidth = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
             var parentWidth = this.drawer.getWidth();
             var width = nominalWidth;
-            var start = this.drawer.getScrollX();
-            var end = Math.max(start + parentWidth, width);
+            var start = this.drawer.getScrollX(); // current cursor position
+            var end = Math.max(start + parentWidth, width); // end of canvas
             // Fill container
             if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
+                // MinSun: client's waveform gets here.
                 width = parentWidth;
                 start = 0;
                 end = width;
@@ -3920,15 +4085,29 @@ var WaveSurfer = function (_util$Observer) {
 
             var peaks = void 0;
             if (this.params.partialRender) {
+                // MinSun: not applicable in client project
                 var newRanges = this.peakCache.addRangeToPeakCache(width, start, end);
                 var i = void 0;
                 for (i = 0; i < newRanges.length; i++) {
                     peaks = this.backend.getPeaks(width, newRanges[i][0], newRanges[i][1]);
-                    this.drawer.drawPeaks(peaks, width, newRanges[i][0], newRanges[i][1]);
+                    this.drawer.drawPeaks(peaks, width, newRanges[i][0], newRanges[i][1], [0]
+                    // MinSun: dummy value here bc our client code doesn't get here
+                    );
                 }
             } else {
+                // MinSun: client's waveform gets here!!!
                 peaks = this.backend.getPeaks(width, start, end);
-                this.drawer.drawPeaks(peaks, width, start, end);
+                // MinSun: need to provide real doctorsRange value here b/c
+                // drawBuffer() is used everywhere and I don't want to change everything.
+                // TODO: Add it as a wavesurfer parameter later.
+                // Let's put dummy value for now.
+                var doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
+                // First convert seconds into pixels!
+                var doctorsRangePix = [];
+                for (var ind = 0; ind < doctorsRangeSec.length; ind++) {
+                    doctorsRangePix.push(this.percentToProgressPos(doctorsRangeSec[ind] / this.getDuration()));
+                }
+                this.drawer.drawPeaks(peaks, width, start, end, doctorsRangePix);
             }
             this.fireEvent('redraw', peaks, width);
         }
@@ -4350,6 +4529,7 @@ var WaveSurfer = function (_util$Observer) {
             this.clearTmpEvents();
             this.drawer.progress(0);
             this.drawer.setWidth(0);
+            // MinSun: how does this work? with just two parameters?
             this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
         }
 

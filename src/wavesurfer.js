@@ -532,12 +532,10 @@ export default class WaveSurfer extends util.Observer {
      * Convert played percent into x-offset of progress position in pixels
      */
     percentToProgressPos(percent) {
-      return (
-          Math.round(
-              percent * this.drawer.getWidth()
-          ) *
-          (1 / this.params.pixelRatio)
-      );
+        return (
+            Math.round(percent * this.drawer.getWidth()) *
+            (1 / this.params.pixelRatio)
+        );
     }
 
     /**
@@ -569,7 +567,8 @@ export default class WaveSurfer extends util.Observer {
             window.addEventListener('orientationchange', this._onResize, true);
         }
 
-        this.drawer.on('redraw', () => { // MinSun: progress waveform updated here
+        this.drawer.on('redraw', () => {
+            // MinSun: progress waveform updated here
             this.drawBuffer();
             this.drawer.progress(this.backend.getPlayedPercents());
         });
@@ -1117,7 +1116,8 @@ export default class WaveSurfer extends util.Observer {
         }
 
         let peaks;
-        if (this.params.partialRender) { // MinSun: not applicable in client project
+        if (this.params.partialRender) {
+            // MinSun: not applicable in client project
             const newRanges = this.peakCache.addRangeToPeakCache(
                 width,
                 start,
@@ -1135,15 +1135,28 @@ export default class WaveSurfer extends util.Observer {
                     width,
                     newRanges[i][0],
                     newRanges[i][1],
-                    [0] // MinSun: dummy value here bc our client code doesn't get here
+                    [0]
+                    // MinSun: dummy value here bc our client code doesn't get here
                 );
             }
-        } else { // MinSun: client's waveform gets here!!!
+        } else {
+            // MinSun: client's waveform gets here!!!
             peaks = this.backend.getPeaks(width, start, end);
-             // MinSun: need to provide real doctorsRange value here b/c
-             // drawBuffer() is used everywhere and I don't want to change everything.
-             // Let's put dummy value for now.
-            this.drawer.drawPeaks(peaks, width, start, end, [0, 2, 5, 10, 15, 18]);
+            // MinSun: need to provide real doctorsRange value here b/c
+            // drawBuffer() is used everywhere and I don't want to change everything.
+            // TODO: Add it as a wavesurfer parameter later.
+            // Let's put dummy value for now.
+            const doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
+            // First convert seconds into pixels!
+            let doctorsRangePix = [];
+            for (let ind = 0; ind < doctorsRangeSec.length; ind++) {
+                doctorsRangePix.push(
+                    this.percentToProgressPos(
+                        doctorsRangeSec[ind] / this.getDuration()
+                    )
+                );
+            }
+            this.drawer.drawPeaks(peaks, width, start, end, doctorsRangePix);
         }
         this.fireEvent('redraw', peaks, width);
     }
