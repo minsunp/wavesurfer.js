@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Mon Sep 10 2018 12:32:55 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Mon Sep 10 2018 16:29:16 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -3098,7 +3098,8 @@ var WaveSurfer = function (_util$Observer) {
             skipLength: 2,
             splitChannels: false,
             waveColor: '#999',
-            xhr: {}
+            xhr: {},
+            doctorsRangeSec: [0, 2, 5, 10, 15, 18]
         };
         _this.backends = {
             MediaElement: _mediaelement2.default,
@@ -4117,11 +4118,11 @@ var WaveSurfer = function (_util$Observer) {
                 // drawBuffer() is used everywhere and I don't want to change everything.
                 // TODO: Add it as a wavesurfer parameter later.
                 // Let's put dummy value for now.
-                var doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
+                // const doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
                 // First convert seconds into pixels!
                 var doctorsRangePix = [];
-                for (var ind = 0; ind < doctorsRangeSec.length; ind++) {
-                    doctorsRangePix.push(this.percentToProgressPos(doctorsRangeSec[ind] / this.getDuration()));
+                for (var ind = 0; ind < this.params.doctorsRangeSec.length; ind++) {
+                    doctorsRangePix.push(this.percentToProgressPos(this.params.doctorsRangeSec[ind] / this.getDuration()));
                 }
                 this.drawer.drawPeaks(peaks, width, start, end, doctorsRangePix);
             }

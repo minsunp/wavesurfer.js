@@ -211,7 +211,8 @@ export default class WaveSurfer extends util.Observer {
         skipLength: 2,
         splitChannels: false,
         waveColor: '#999',
-        xhr: {}
+        xhr: {},
+        doctorsRangeSec: [0, 2, 5, 10, 15, 18]
     };
 
     /** @private */
@@ -1157,13 +1158,13 @@ export default class WaveSurfer extends util.Observer {
             // drawBuffer() is used everywhere and I don't want to change everything.
             // TODO: Add it as a wavesurfer parameter later.
             // Let's put dummy value for now.
-            const doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
+            // const doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
             // First convert seconds into pixels!
             let doctorsRangePix = [];
-            for (let ind = 0; ind < doctorsRangeSec.length; ind++) {
+            for (let ind = 0; ind < this.params.doctorsRangeSec.length; ind++) {
                 doctorsRangePix.push(
                     this.percentToProgressPos(
-                        doctorsRangeSec[ind] / this.getDuration()
+                        this.params.doctorsRangeSec[ind] / this.getDuration()
                     )
                 );
             }
