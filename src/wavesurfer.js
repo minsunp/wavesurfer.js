@@ -1067,6 +1067,17 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Added by MinSun:
+     * Get this.drawer.getWidth
+     *
+     * @example const drawerWidth = wavesurfer.getDrawerWidth();
+     * @return {number} drawer width
+     */
+    getDrawerWidth() {
+        return this.drawer.getWidth();
+    }
+
+    /**
      * Get the height of the waveform.
      *
      * @return {number} Height measured in pixels.

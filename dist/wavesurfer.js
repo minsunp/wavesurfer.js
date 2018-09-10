@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Fri Sep 07 2018 15:52:58 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Mon Sep 10 2018 12:32:55 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -1448,10 +1448,10 @@ var MultiCanvas = function (_Drawer) {
         key: 'setFillStyles',
         value: function setFillStyles(entry) {
             entry.waveCtx.fillStyle = this.params.waveColor;
-            entry.patientWaveCtx.fillStyle = '#eb42f4';
+            entry.patientWaveCtx.fillStyle = '#465899';
             if (this.hasProgressCanvas) {
                 entry.progressCtx.fillStyle = this.params.progressColor;
-                entry.patientProgressCtx.fillStyle = '#f24a3e';
+                entry.patientProgressCtx.fillStyle = '#5F78FF';
             }
         }
 
@@ -4032,6 +4032,20 @@ var WaveSurfer = function (_util$Observer) {
         key: 'getPixelRatio',
         value: function getPixelRatio() {
             return this.params.pixelRatio;
+        }
+
+        /**
+         * Added by MinSun:
+         * Get this.drawer.getWidth
+         *
+         * @example const drawerWidth = wavesurfer.getDrawerWidth();
+         * @return {number} drawer width
+         */
+
+    }, {
+        key: 'getDrawerWidth',
+        value: function getDrawerWidth() {
+            return this.drawer.getWidth();
         }
 
         /**
