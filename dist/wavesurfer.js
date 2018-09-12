@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Mon Sep 10 2018 16:29:16 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Sep 12 2018 11:56:50 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -1448,10 +1448,10 @@ var MultiCanvas = function (_Drawer) {
         key: 'setFillStyles',
         value: function setFillStyles(entry) {
             entry.waveCtx.fillStyle = this.params.waveColor;
-            entry.patientWaveCtx.fillStyle = '#465899';
+            entry.patientWaveCtx.fillStyle = '#BFC9FF'; // lighter/darker blue
             if (this.hasProgressCanvas) {
                 entry.progressCtx.fillStyle = this.params.progressColor;
-                entry.patientProgressCtx.fillStyle = '#5F78FF';
+                entry.patientProgressCtx.fillStyle = '#5F78FF'; // blue
             }
         }
 
