@@ -92,6 +92,10 @@ import PeakCache from './peakcache';
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options.
+ * @property {object} doctorsRangeSec=[0, 2, 5, 10, 15, 18] List of points that
+ * divide doctors' part and patient's speaking (in seconds)
+ * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18]
+ * seconds. The rest is patient speaking.
  */
 
 /**

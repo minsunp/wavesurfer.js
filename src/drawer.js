@@ -368,7 +368,7 @@ export default class Drawer extends util.Observer {
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
      * @param {number[]} doctorsRangePix List of points that divide doctors' part and
-     * patient's speaking (in seconds)
+     * patient's speaking (in pixels)
      * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
      * The rest is patient speaking.
      */

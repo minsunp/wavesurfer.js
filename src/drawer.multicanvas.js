@@ -778,10 +778,10 @@ export default class MultiCanvas extends Drawer {
      */
     setFillStyles(entry) {
         entry.waveCtx.fillStyle = this.params.waveColor;
-        entry.patientWaveCtx.fillStyle = '#BFC9FF'; // lighter/darker blue
+        entry.patientWaveCtx.fillStyle = '#aff0d5'; // lighter/darker blue
         if (this.hasProgressCanvas) {
             entry.progressCtx.fillStyle = this.params.progressColor;
-            entry.patientProgressCtx.fillStyle = '#5F78FF'; // blue
+            entry.patientProgressCtx.fillStyle = '#36d995'; // blue
         }
     }
 

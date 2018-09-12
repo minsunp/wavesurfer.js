@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Wed Sep 12 2018 12:33:19 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Sep 12 2018 14:26:13 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -625,7 +625,7 @@ var Drawer = function (_util$Observer) {
          * @param {number} end The x-offset of the end of the area that should be
          * rendered
          * @param {number[]} doctorsRangePix List of points that divide doctors' part and
-         * patient's speaking (in seconds)
+         * patient's speaking (in pixels)
          * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
          * The rest is patient speaking.
          */
@@ -1453,10 +1453,10 @@ var MultiCanvas = function (_Drawer) {
         key: 'setFillStyles',
         value: function setFillStyles(entry) {
             entry.waveCtx.fillStyle = this.params.waveColor;
-            entry.patientWaveCtx.fillStyle = '#BFC9FF'; // lighter/darker blue
+            entry.patientWaveCtx.fillStyle = '#aff0d5'; // lighter/darker blue
             if (this.hasProgressCanvas) {
                 entry.progressCtx.fillStyle = this.params.progressColor;
-                entry.patientProgressCtx.fillStyle = '#5F78FF'; // blue
+                entry.patientProgressCtx.fillStyle = '#36d995'; // blue
             }
         }
 
@@ -2902,6 +2902,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options.
+ * @property {object} doctorsRangeSec=[0, 2, 5, 10, 15, 18] List of points that
+ * divide doctors' part and patient's speaking (in seconds)
+ * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18]
+ * seconds. The rest is patient speaking.
  */
 
 /**
