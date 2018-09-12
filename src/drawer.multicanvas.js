@@ -417,12 +417,14 @@ export default class MultiCanvas extends Drawer {
                 for (i = first; i < last; i += step) {
                     const peak =
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
-                    let h = Math.round((peak / absmax) * halfH);
+                    const h = Math.round((peak / absmax) * halfH);
 
                     // Draw dots in silent parts
+                    /*
                     if (h <= 0) {
                         h = 1;
                     }
+                    */
 
                     // Time to update drInd
                     if (i > doctorsRangePix[drInd]) {
@@ -760,6 +762,9 @@ export default class MultiCanvas extends Drawer {
     fillRectToContext(ctx, x, y, width, height) {
         if (!ctx) {
             return;
+        }
+        if (height == 0) {
+            height = 1;
         }
         ctx.fillRect(x, y, width, height);
     }

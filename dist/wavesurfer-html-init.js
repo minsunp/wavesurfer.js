@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Wed Sep 12 2018 11:57:00 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Sep 12 2018 12:33:25 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */

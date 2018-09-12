@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Wed Sep 12 2018 11:56:50 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Sep 12 2018 12:33:19 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -1134,9 +1134,11 @@ var MultiCanvas = function (_Drawer) {
                     var h = Math.round(peak / absmax * halfH);
 
                     // Draw dots in silent parts
+                    /*
                     if (h <= 0) {
                         h = 1;
                     }
+                    */
 
                     // Time to update drInd
                     if (i > doctorsRangePix[drInd]) {
@@ -1432,6 +1434,9 @@ var MultiCanvas = function (_Drawer) {
         value: function fillRectToContext(ctx, x, y, width, height) {
             if (!ctx) {
                 return;
+            }
+            if (height == 0) {
+                height = 1;
             }
             ctx.fillRect(x, y, width, height);
         }
