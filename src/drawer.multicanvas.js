@@ -189,7 +189,8 @@ export default class MultiCanvas extends Drawer {
                 top: 0,
                 bottom: 0,
                 height: '100%',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                maxWidth: 'none'
             })
         );
         entry.waveCtx = entry.wave.getContext('2d');
@@ -218,7 +219,8 @@ export default class MultiCanvas extends Drawer {
                 top: 0,
                 bottom: 0,
                 height: '100%',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                maxWidth: 'none'
             })
         );
         entry.patientWaveCtx = entry.patientWave.getContext('2d');

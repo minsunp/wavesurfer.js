@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Wed Sep 12 2018 14:26:13 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Sep 12 2018 15:12:58 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -915,7 +915,8 @@ var MultiCanvas = function (_Drawer) {
                 top: 0,
                 bottom: 0,
                 height: '100%',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                maxWidth: 'none'
             }));
             entry.waveCtx = entry.wave.getContext('2d');
 
@@ -940,7 +941,8 @@ var MultiCanvas = function (_Drawer) {
                 top: 0,
                 bottom: 0,
                 height: '100%',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                maxWidth: 'none'
             }));
             entry.patientWaveCtx = entry.patientWave.getContext('2d');
 
@@ -4098,12 +4100,14 @@ var WaveSurfer = function (_util$Observer) {
         value: function drawBuffer() {
             var nominalWidth = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
             var parentWidth = this.drawer.getWidth();
+            // MinSun: if waveform is scrollable
             var width = nominalWidth;
             var start = this.drawer.getScrollX(); // current cursor position
             var end = Math.max(start + parentWidth, width); // end of canvas
             // Fill container
             if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
-                // MinSun: client's waveform gets here.
+                console.log('does it get here?');
+                // MinSun: if waveform is not scrollable
                 width = parentWidth;
                 start = 0;
                 end = width;

@@ -1117,6 +1117,7 @@ export default class WaveSurfer extends util.Observer {
                 this.params.pixelRatio
         );
         const parentWidth = this.drawer.getWidth();
+        // MinSun: if waveform is scrollable
         let width = nominalWidth;
         let start = this.drawer.getScrollX(); // current cursor position
         let end = Math.max(start + parentWidth, width); // end of canvas
@@ -1125,7 +1126,8 @@ export default class WaveSurfer extends util.Observer {
             this.params.fillParent &&
             (!this.params.scrollParent || nominalWidth < parentWidth)
         ) {
-            // MinSun: client's waveform gets here.
+            console.log('does it get here?');
+            // MinSun: if waveform is not scrollable
             width = parentWidth;
             start = 0;
             end = width;
