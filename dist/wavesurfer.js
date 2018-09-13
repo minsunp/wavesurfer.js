@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Wed Sep 12 2018 15:12:58 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Thu Sep 13 2018 12:14:35 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -569,7 +569,6 @@ var Drawer = function (_util$Observer) {
                     var newPos = ~~(this.wrapper.scrollWidth * _progress);
                     this.recenterOnPosition(newPos);
                 }
-
                 this.updateProgress(pos);
             }
         }
@@ -3396,7 +3395,7 @@ var WaveSurfer = function (_util$Observer) {
     }, {
         key: 'percentToProgressPos',
         value: function percentToProgressPos(percent) {
-            return Math.round(percent * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
+            return Math.round(percent * this.drawer.getThisWidth()) * (1 / this.params.pixelRatio);
         }
 
         /**
@@ -3407,7 +3406,7 @@ var WaveSurfer = function (_util$Observer) {
     }, {
         key: 'getProgressPos',
         value: function getProgressPos() {
-            return Math.round(this.backend.getPlayedPercents() * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
+            return Math.round(this.backend.getPlayedPercents() * this.drawer.getThisWidth()) * (1 / this.params.pixelRatio);
         }
 
         /**
@@ -4102,7 +4101,7 @@ var WaveSurfer = function (_util$Observer) {
             var parentWidth = this.drawer.getWidth();
             // MinSun: if waveform is scrollable
             var width = nominalWidth;
-            var start = this.drawer.getScrollX(); // current cursor position
+            var start = this.drawer.getScrollX(); // this is NOT cursor position!!!
             var end = Math.max(start + parentWidth, width); // end of canvas
             // Fill container
             if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {

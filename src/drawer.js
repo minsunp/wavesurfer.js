@@ -321,7 +321,6 @@ export default class Drawer extends util.Observer {
                 const newPos = ~~(this.wrapper.scrollWidth * progress);
                 this.recenterOnPosition(newPos);
             }
-
             this.updateProgress(pos);
         }
     }

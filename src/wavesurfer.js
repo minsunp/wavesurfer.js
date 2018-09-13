@@ -538,7 +538,7 @@ export default class WaveSurfer extends util.Observer {
      */
     percentToProgressPos(percent) {
         return (
-            Math.round(percent * this.drawer.getWidth()) *
+            Math.round(percent * this.drawer.getThisWidth()) *
             (1 / this.params.pixelRatio)
         );
     }
@@ -550,7 +550,7 @@ export default class WaveSurfer extends util.Observer {
     getProgressPos() {
         return (
             Math.round(
-                this.backend.getPlayedPercents() * this.drawer.getWidth()
+                this.backend.getPlayedPercents() * this.drawer.getThisWidth()
             ) *
             (1 / this.params.pixelRatio)
         );
@@ -1119,7 +1119,7 @@ export default class WaveSurfer extends util.Observer {
         const parentWidth = this.drawer.getWidth();
         // MinSun: if waveform is scrollable
         let width = nominalWidth;
-        let start = this.drawer.getScrollX(); // current cursor position
+        let start = this.drawer.getScrollX(); // this is NOT cursor position!!!
         let end = Math.max(start + parentWidth, width); // end of canvas
         // Fill container
         if (
