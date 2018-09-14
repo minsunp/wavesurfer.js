@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Thu Sep 13 2018 12:14:35 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Fri Sep 14 2018 13:19:20 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -602,6 +602,18 @@ var Drawer = function (_util$Observer) {
         value: function updateCursor() {}
 
         /**
+         * Added by MinSun:
+         * Called when the commentedSec array is updated. Redraw timestamps.
+         *
+         * @abstract
+         * @param {number[]} arr List of pixels where comments were made on the waveform.
+         */
+
+    }, {
+        key: 'updateTimestamps',
+        value: function updateTimestamps(arr) {}
+
+        /**
          * Called when the size of the container changes so the renderer can adjust
          *
          * @abstract
@@ -715,6 +727,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+// import timeImg from './assets/timestamp.svg';
+
 /**
  * @typedef {Object} CanvasEntry
  * @private
@@ -780,15 +794,52 @@ var MultiCanvas = function (_Drawer) {
         _this.patientWave = null; // patient's part
         /** @private */
         _this.patientProgressWave = null; // patient's progress part
+        // <timestamps> DOM element
+        _this.timestamps = null;
         return _this;
     }
 
     /**
-     * Initialise the drawer
+     * Added by MinSun:
+     * Render the timestamps on this.timestamps element
+     * @param {number[]} arr List of pixels where comments were made on the waveform.
      */
 
 
     _createClass(MultiCanvas, [{
+        key: 'updateTimestamps',
+        value: function updateTimestamps(arr) {
+            // First test if the code actually reaches here
+            console.log('in updateTimestamps?');
+
+            var width = 20; // width of each timestamp
+            var x = 0; // start of a timestamp - dummy val.
+            var startCanvas = Math.floor(x / this.maxCanvasWidth);
+            var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
+            var i = void 0;
+
+            for (i = startCanvas; i < endCanvas; i++) {
+                var entry = this.canvases[i];
+
+                for (var pixelOffset in arr) {
+                    /* Image wouldn't load.. Try drawing on canvas
+                    let timestampImg = document.createElement('img');
+                    timestampImg.src = timeImg;
+                    timestampImg.style.zIndex = 4;
+                    timestampImg.style.height = '10px';
+                    timestampImg.style.marginLeft = arr[pixelOffset] + 'px';
+                    timestampImg.style.marginTop = '-380px';
+                    */
+                    entry.timesCtx.fillRect(arr[pixelOffset], 0, 20, 20);
+                    entry.timesCtx.fillStyle = '#aff0d5';
+                }
+            }
+        }
+        /**
+         * Initialise the drawer
+         */
+
+    }, {
         key: 'init',
         value: function init() {
             this.createWrapper();
@@ -841,6 +892,18 @@ var MultiCanvas = function (_Drawer) {
                 borderRightStyle: 'solid',
                 pointerEvents: 'none',
                 backgroundColor: this.params.progressBackgroundColor
+            }));
+            this.timestamps = this.wrapper.appendChild(this.style(document.createElement('timestamps'), {
+                position: 'absolute',
+                zIndex: 3,
+                left: 0,
+                top: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                width: this.wrapper.clientWidth + 'px',
+                display: 'block',
+                boxSizing: 'border-box',
+                pointerEvents: 'none'
             }));
 
             this.addCanvas();
@@ -958,6 +1021,19 @@ var MultiCanvas = function (_Drawer) {
                 entry.patientProgressCtx = entry.patientProgress.getContext('2d');
             }
 
+            // Create canvas for rendering timestamps - copying default waves settings
+            entry.times = this.timestamps.appendChild(this.style(document.createElement('canvas'), {
+                position: 'absolute',
+                zIndex: 4,
+                left: leftOffset + 'px',
+                top: 0,
+                bottom: 0,
+                height: '100%',
+                pointerEvents: 'none',
+                maxWidth: 'none'
+            }));
+            entry.timesCtx = entry.times.getContext('2d');
+
             this.canvases.push(entry);
         }
 
@@ -1008,6 +1084,10 @@ var MultiCanvas = function (_Drawer) {
             entry.patientWaveCtx.canvas.width = width;
             entry.patientWaveCtx.canvas.height = height;
             this.style(entry.patientWaveCtx.canvas, { width: elementWidth + 'px' });
+
+            entry.timesCtx.canvas.width = width;
+            entry.timesCtx.canvas.height = height;
+            this.style(entry.timesCtx.canvas, { width: elementWidth + 'px' });
             // ENDS here.
 
             this.style(this.progressWave, { display: 'block' });
@@ -1060,6 +1140,7 @@ var MultiCanvas = function (_Drawer) {
         value: function clearWaveForEntry(entry) {
             entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
             entry.patientWaveCtx.clearRect(0, 0, entry.patientWaveCtx.canvas.width, entry.patientWaveCtx.canvas.height);
+            entry.timesCtx.clearRect(0, 0, entry.timesCtx.canvas.width, entry.timesCtx.canvas.height);
             if (this.hasProgressCanvas) {
                 entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
             }
@@ -2903,10 +2984,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options.
- * @property {object} doctorsRangeSec=[0, 2, 5, 10, 15, 18] List of points that
+ *
+ * Added by MinSun:
+ * @property {array} doctorsRangeSec=[0, 2, 5, 10, 15, 18] List of points that
  * divide doctors' part and patient's speaking (in seconds)
  * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18]
  * seconds. The rest is patient speaking.
+ * @property {array} commentedSec=[] List of seconds where the comments were made
  */
 
 /**
@@ -3213,20 +3297,52 @@ var WaveSurfer = function (_util$Observer) {
             }
         }, typeof _this.params.responsive === 'number' ? _this.params.responsive : 100);
 
+        // Added by MinSun:
+        _this.commentedSec = []; // List of seconds where the comments were made
+
         return _ret = _this, _possibleConstructorReturn(_this, _ret);
     }
 
     /**
-     * Initialise the wave
+     * Added by MinSun: Update commentedSec array based on backend data.
+     * The idea right now is to redraw everything whenever there's an update.
+     * If user exits out of commenting mode, use setCommentedSec([]);
      *
-     * @example
-     * var wavesurfer = new WaveSurfer(params);
-     * wavesurfer.init();
-     * @return {this}
+     * Division of task: client decides if/where the timestamps should be drawn,
+     * and wavesurfer simply receives the decision and renders.
+     *
+     * TODO: trigger wavesurfer to draw timestamps
+     * TODO: make sure that this is only called when commenting is first enabled,
+     * first disabled, or when comments are added/deleted.
+     *
+     * @example wavesurfer.setCommentedSec(arr);
      */
 
 
     _createClass(WaveSurfer, [{
+        key: 'setCommentedSec',
+        value: function setCommentedSec(arr) {
+            this.commentedSec = arr; // TODO: do we really need this, if we're just
+            // redrawing everything at once?
+
+            // Convert seconds to pixels first
+            var commentedPix = [];
+            for (var ind = 0; ind < arr.length; ind++) {
+                commentedPix.push(this.percentToProgressPos(this.commentedSec[ind] / this.getDuration()));
+            }
+            this.drawer.updateTimestamps(commentedPix);
+        }
+
+        /**
+         * Initialise the wave
+         *
+         * @example
+         * var wavesurfer = new WaveSurfer(params);
+         * wavesurfer.init();
+         * @return {this}
+         */
+
+    }, {
         key: 'init',
         value: function init() {
             this.registerPlugins(this.params.plugins);
@@ -3395,7 +3511,7 @@ var WaveSurfer = function (_util$Observer) {
     }, {
         key: 'percentToProgressPos',
         value: function percentToProgressPos(percent) {
-            return Math.round(percent * this.drawer.getThisWidth()) * (1 / this.params.pixelRatio);
+            return Math.round(percent * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
         }
 
         /**
@@ -4128,7 +4244,6 @@ var WaveSurfer = function (_util$Observer) {
                 peaks = this.backend.getPeaks(width, start, end);
                 // MinSun: need to provide real doctorsRange value here b/c
                 // drawBuffer() is used everywhere and I don't want to change everything.
-                // TODO: Add it as a wavesurfer parameter later.
                 // Let's put dummy value for now.
                 // const doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
                 // First convert seconds into pixels!

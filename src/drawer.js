@@ -348,6 +348,15 @@ export default class Drawer extends util.Observer {
     updateCursor() {}
 
     /**
+     * Added by MinSun:
+     * Called when the commentedSec array is updated. Redraw timestamps.
+     *
+     * @abstract
+     * @param {number[]} arr List of pixels where comments were made on the waveform.
+     */
+    updateTimestamps(arr) {}
+
+    /**
      * Called when the size of the container changes so the renderer can adjust
      *
      * @abstract

@@ -92,10 +92,13 @@ import PeakCache from './peakcache';
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options.
- * @property {object} doctorsRangeSec=[0, 2, 5, 10, 15, 18] List of points that
+ *
+ * Added by MinSun:
+ * @property {array} doctorsRangeSec=[0, 2, 5, 10, 15, 18] List of points that
  * divide doctors' part and patient's speaking (in seconds)
  * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18]
  * seconds. The rest is patient speaking.
+ * @property {array} commentedSec=[] List of seconds where the comments were made
  */
 
 /**
@@ -377,7 +380,40 @@ export default class WaveSurfer extends util.Observer {
             }
         }, typeof this.params.responsive === 'number' ? this.params.responsive : 100);
 
+        // Added by MinSun:
+        this.commentedSec = []; // List of seconds where the comments were made
+
         return this;
+    }
+
+    /**
+     * Added by MinSun: Update commentedSec array based on backend data.
+     * The idea right now is to redraw everything whenever there's an update.
+     * If user exits out of commenting mode, use setCommentedSec([]);
+     *
+     * Division of task: client decides if/where the timestamps should be drawn,
+     * and wavesurfer simply receives the decision and renders.
+     *
+     * TODO: trigger wavesurfer to draw timestamps
+     * TODO: make sure that this is only called when commenting is first enabled,
+     * first disabled, or when comments are added/deleted.
+     *
+     * @example wavesurfer.setCommentedSec(arr);
+     */
+    setCommentedSec(arr) {
+        this.commentedSec = arr; // TODO: do we really need this, if we're just
+        // redrawing everything at once?
+
+        // Convert seconds to pixels first
+        let commentedPix = [];
+        for (let ind = 0; ind < arr.length; ind++) {
+            commentedPix.push(
+                this.percentToProgressPos(
+                    this.commentedSec[ind] / this.getDuration()
+                )
+            );
+        }
+        this.drawer.updateTimestamps(commentedPix);
     }
 
     /**
@@ -538,7 +574,7 @@ export default class WaveSurfer extends util.Observer {
      */
     percentToProgressPos(percent) {
         return (
-            Math.round(percent * this.drawer.getThisWidth()) *
+            Math.round(percent * this.drawer.getWidth()) *
             (1 / this.params.pixelRatio)
         );
     }
@@ -1162,7 +1198,6 @@ export default class WaveSurfer extends util.Observer {
             peaks = this.backend.getPeaks(width, start, end);
             // MinSun: need to provide real doctorsRange value here b/c
             // drawBuffer() is used everywhere and I don't want to change everything.
-            // TODO: Add it as a wavesurfer parameter later.
             // Let's put dummy value for now.
             // const doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
             // First convert seconds into pixels!

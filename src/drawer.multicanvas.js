@@ -1,5 +1,6 @@
 import Drawer from './drawer';
 import * as util from './util';
+// import timeImg from './assets/timestamp.svg';
 
 /**
  * @typedef {Object} CanvasEntry
@@ -63,8 +64,45 @@ export default class MultiCanvas extends Drawer {
         this.patientWave = null; // patient's part
         /** @private */
         this.patientProgressWave = null; // patient's progress part
+        // <timestamps> DOM element
+        this.timestamps = null;
     }
 
+    /**
+     * Added by MinSun:
+     * Render the timestamps on this.timestamps element
+     * @param {number[]} arr List of pixels where comments were made on the waveform.
+     */
+    updateTimestamps(arr) {
+        // First test if the code actually reaches here
+        console.log('in updateTimestamps?');
+
+        const width = 20; // width of each timestamp
+        const x = 0; // start of a timestamp - dummy val.
+        const startCanvas = Math.floor(x / this.maxCanvasWidth);
+        const endCanvas = Math.min(
+            Math.ceil((x + width) / this.maxCanvasWidth) + 1,
+            this.canvases.length
+        );
+        let i;
+
+        for (i = startCanvas; i < endCanvas; i++) {
+            const entry = this.canvases[i];
+
+            for (let pixelOffset in arr) {
+                /* Image wouldn't load.. Try drawing on canvas
+                let timestampImg = document.createElement('img');
+                timestampImg.src = timeImg;
+                timestampImg.style.zIndex = 4;
+                timestampImg.style.height = '10px';
+                timestampImg.style.marginLeft = arr[pixelOffset] + 'px';
+                timestampImg.style.marginTop = '-380px';
+                */
+                entry.timesCtx.fillRect(arr[pixelOffset], 0, 20, 20);
+                entry.timesCtx.fillStyle = '#aff0d5';
+            }
+        }
+    }
     /**
      * Initialise the drawer
      */
@@ -120,6 +158,20 @@ export default class MultiCanvas extends Drawer {
                 borderRightStyle: 'solid',
                 pointerEvents: 'none',
                 backgroundColor: this.params.progressBackgroundColor
+            })
+        );
+        this.timestamps = this.wrapper.appendChild(
+            this.style(document.createElement('timestamps'), {
+                position: 'absolute',
+                zIndex: 3,
+                left: 0,
+                top: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                width: this.wrapper.clientWidth + 'px',
+                display: 'block',
+                boxSizing: 'border-box',
+                pointerEvents: 'none'
             })
         );
 
@@ -240,6 +292,21 @@ export default class MultiCanvas extends Drawer {
             entry.patientProgressCtx = entry.patientProgress.getContext('2d');
         }
 
+        // Create canvas for rendering timestamps - copying default waves settings
+        entry.times = this.timestamps.appendChild(
+            this.style(document.createElement('canvas'), {
+                position: 'absolute',
+                zIndex: 4,
+                left: leftOffset + 'px',
+                top: 0,
+                bottom: 0,
+                height: '100%',
+                pointerEvents: 'none',
+                maxWidth: 'none'
+            })
+        );
+        entry.timesCtx = entry.times.getContext('2d');
+
         this.canvases.push(entry);
     }
 
@@ -286,6 +353,10 @@ export default class MultiCanvas extends Drawer {
         entry.patientWaveCtx.canvas.width = width;
         entry.patientWaveCtx.canvas.height = height;
         this.style(entry.patientWaveCtx.canvas, { width: elementWidth + 'px' });
+
+        entry.timesCtx.canvas.width = width;
+        entry.timesCtx.canvas.height = height;
+        this.style(entry.timesCtx.canvas, { width: elementWidth + 'px' });
         // ENDS here.
 
         this.style(this.progressWave, { display: 'block' });
@@ -337,6 +408,12 @@ export default class MultiCanvas extends Drawer {
             0,
             entry.patientWaveCtx.canvas.width,
             entry.patientWaveCtx.canvas.height
+        );
+        entry.timesCtx.clearRect(
+            0,
+            0,
+            entry.timesCtx.canvas.width,
+            entry.timesCtx.canvas.height
         );
         if (this.hasProgressCanvas) {
             entry.progressCtx.clearRect(
