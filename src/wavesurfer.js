@@ -403,17 +403,12 @@ export default class WaveSurfer extends util.Observer {
     setCommentedSec(arr) {
         this.commentedSec = arr; // TODO: do we really need this, if we're just
         // redrawing everything at once?
-
-        // Convert seconds to pixels first
-        let commentedPix = [];
+        // Convert seconds to percent first
+        let commentedPerc = [];
         for (let ind = 0; ind < arr.length; ind++) {
-            commentedPix.push(
-                this.percentToProgressPos(
-                    this.commentedSec[ind] / this.getDuration()
-                )
-            );
+            commentedPerc.push(this.commentedSec[ind] / this.getDuration());
         }
-        this.drawer.updateTimestamps(commentedPix);
+        this.drawer.updateTimestamps(commentedPerc);
     }
 
     /**

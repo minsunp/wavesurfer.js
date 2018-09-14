@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Fri Sep 14 2018 13:19:20 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Fri Sep 14 2018 15:56:22 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -809,10 +809,7 @@ var MultiCanvas = function (_Drawer) {
     _createClass(MultiCanvas, [{
         key: 'updateTimestamps',
         value: function updateTimestamps(arr) {
-            // First test if the code actually reaches here
-            console.log('in updateTimestamps?');
-
-            var width = 20; // width of each timestamp
+            var width = 5; // width of each timestamp
             var x = 0; // start of a timestamp - dummy val.
             var startCanvas = Math.floor(x / this.maxCanvasWidth);
             var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
@@ -821,7 +818,8 @@ var MultiCanvas = function (_Drawer) {
             for (i = startCanvas; i < endCanvas; i++) {
                 var entry = this.canvases[i];
 
-                for (var pixelOffset in arr) {
+                var pixelOffset = void 0;
+                for (var ind in arr) {
                     /* Image wouldn't load.. Try drawing on canvas
                     let timestampImg = document.createElement('img');
                     timestampImg.src = timeImg;
@@ -830,7 +828,16 @@ var MultiCanvas = function (_Drawer) {
                     timestampImg.style.marginLeft = arr[pixelOffset] + 'px';
                     timestampImg.style.marginTop = '-380px';
                     */
-                    entry.timesCtx.fillRect(arr[pixelOffset], 0, 20, 20);
+                    // Width of entire waveform (not just the visible part)
+                    // Copy Paste from updateSize()
+                    var canvasWidth = this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
+                    if (i == this.canvases.length - 1) {
+                        canvasWidth = this.width - this.maxCanvasWidth * (this.canvases.length - 1);
+                    }
+                    pixelOffset = arr[ind] * canvasWidth;
+                    console.log(canvasWidth);
+                    console.log(arr[ind]);
+                    entry.timesCtx.fillRect(pixelOffset, 0, 5, 20); // x,y,width,height
                     entry.timesCtx.fillStyle = '#aff0d5';
                 }
             }
@@ -894,16 +901,18 @@ var MultiCanvas = function (_Drawer) {
                 backgroundColor: this.params.progressBackgroundColor
             }));
             this.timestamps = this.wrapper.appendChild(this.style(document.createElement('timestamps'), {
-                position: 'absolute',
+                position: 'relative',
                 zIndex: 3,
                 left: 0,
-                top: 0,
+                top: -this.params.height + 'px',
                 bottom: 0,
                 overflow: 'hidden',
-                width: this.wrapper.clientWidth + 'px',
-                display: 'block',
+                // width: this.wrapper.clientWidth + 'px',
+                display: 'block', // this starts the timestamp canvas on a new line,
+                // so need to adjust top margin (-height) to pull it up.
                 boxSizing: 'border-box',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                height: this.params.height + 'px'
             }));
 
             this.addCanvas();
@@ -3324,13 +3333,12 @@ var WaveSurfer = function (_util$Observer) {
         value: function setCommentedSec(arr) {
             this.commentedSec = arr; // TODO: do we really need this, if we're just
             // redrawing everything at once?
-
-            // Convert seconds to pixels first
-            var commentedPix = [];
+            // Convert seconds to percent first
+            var commentedPerc = [];
             for (var ind = 0; ind < arr.length; ind++) {
-                commentedPix.push(this.percentToProgressPos(this.commentedSec[ind] / this.getDuration()));
+                commentedPerc.push(this.commentedSec[ind] / this.getDuration());
             }
-            this.drawer.updateTimestamps(commentedPix);
+            this.drawer.updateTimestamps(commentedPerc);
         }
 
         /**

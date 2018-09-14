@@ -74,10 +74,7 @@ export default class MultiCanvas extends Drawer {
      * @param {number[]} arr List of pixels where comments were made on the waveform.
      */
     updateTimestamps(arr) {
-        // First test if the code actually reaches here
-        console.log('in updateTimestamps?');
-
-        const width = 20; // width of each timestamp
+        const width = 5; // width of each timestamp
         const x = 0; // start of a timestamp - dummy val.
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
         const endCanvas = Math.min(
@@ -89,7 +86,8 @@ export default class MultiCanvas extends Drawer {
         for (i = startCanvas; i < endCanvas; i++) {
             const entry = this.canvases[i];
 
-            for (let pixelOffset in arr) {
+            let pixelOffset;
+            for (let ind in arr) {
                 /* Image wouldn't load.. Try drawing on canvas
                 let timestampImg = document.createElement('img');
                 timestampImg.src = timeImg;
@@ -98,7 +96,20 @@ export default class MultiCanvas extends Drawer {
                 timestampImg.style.marginLeft = arr[pixelOffset] + 'px';
                 timestampImg.style.marginTop = '-380px';
                 */
-                entry.timesCtx.fillRect(arr[pixelOffset], 0, 20, 20);
+                // Width of entire waveform (not just the visible part)
+                // Copy Paste from updateSize()
+                let canvasWidth =
+                    this.maxCanvasWidth +
+                    2 * Math.ceil(this.params.pixelRatio / 2);
+                if (i == this.canvases.length - 1) {
+                    canvasWidth =
+                        this.width -
+                        this.maxCanvasWidth * (this.canvases.length - 1);
+                }
+                pixelOffset = arr[ind] * canvasWidth;
+                console.log(canvasWidth);
+                console.log(arr[ind]);
+                entry.timesCtx.fillRect(pixelOffset, 0, 5, 20); // x,y,width,height
                 entry.timesCtx.fillStyle = '#aff0d5';
             }
         }
@@ -162,16 +173,18 @@ export default class MultiCanvas extends Drawer {
         );
         this.timestamps = this.wrapper.appendChild(
             this.style(document.createElement('timestamps'), {
-                position: 'absolute',
+                position: 'relative',
                 zIndex: 3,
                 left: 0,
-                top: 0,
+                top: -this.params.height + 'px',
                 bottom: 0,
                 overflow: 'hidden',
-                width: this.wrapper.clientWidth + 'px',
-                display: 'block',
+                // width: this.wrapper.clientWidth + 'px',
+                display: 'block', // this starts the timestamp canvas on a new line,
+                // so need to adjust top margin (-height) to pull it up.
                 boxSizing: 'border-box',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                height: this.params.height + 'px'
             })
         );
 
