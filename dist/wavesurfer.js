@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Fri Sep 14 2018 15:56:22 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Fri Sep 14 2018 16:07:22 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -606,7 +606,8 @@ var Drawer = function (_util$Observer) {
          * Called when the commentedSec array is updated. Redraw timestamps.
          *
          * @abstract
-         * @param {number[]} arr List of pixels where comments were made on the waveform.
+         * @param {number[]} arr List of percent values where comments were made on
+         * the waveform: currentTime/totalTime
          */
 
     }, {
@@ -802,14 +803,15 @@ var MultiCanvas = function (_Drawer) {
     /**
      * Added by MinSun:
      * Render the timestamps on this.timestamps element
-     * @param {number[]} arr List of pixels where comments were made on the waveform.
+     * @param {number[]} arr List of percent values where comments were made on
+     * the waveform: currentTime/totalTime
      */
 
 
     _createClass(MultiCanvas, [{
         key: 'updateTimestamps',
         value: function updateTimestamps(arr) {
-            var width = 5; // width of each timestamp
+            var width = 3; // width of each timestamp
             var x = 0; // start of a timestamp - dummy val.
             var startCanvas = Math.floor(x / this.maxCanvasWidth);
             var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
@@ -829,7 +831,7 @@ var MultiCanvas = function (_Drawer) {
                     timestampImg.style.marginTop = '-380px';
                     */
                     // Width of entire waveform (not just the visible part)
-                    // Copy Paste from updateSize()
+                    // Copied-Pasted from updateSize() - no idea how this works..
                     var canvasWidth = this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
                     if (i == this.canvases.length - 1) {
                         canvasWidth = this.width - this.maxCanvasWidth * (this.canvases.length - 1);
@@ -837,8 +839,8 @@ var MultiCanvas = function (_Drawer) {
                     pixelOffset = arr[ind] * canvasWidth;
                     console.log(canvasWidth);
                     console.log(arr[ind]);
-                    entry.timesCtx.fillRect(pixelOffset, 0, 5, 20); // x,y,width,height
-                    entry.timesCtx.fillStyle = '#aff0d5';
+                    entry.timesCtx.fillStyle = '#5F78FF';
+                    entry.timesCtx.fillRect(pixelOffset, 0, 3, 15); // x,y,width,height
                 }
             }
         }
@@ -3333,7 +3335,7 @@ var WaveSurfer = function (_util$Observer) {
         value: function setCommentedSec(arr) {
             this.commentedSec = arr; // TODO: do we really need this, if we're just
             // redrawing everything at once?
-            // Convert seconds to percent first
+            // Convert seconds to percent values first
             var commentedPerc = [];
             for (var ind = 0; ind < arr.length; ind++) {
                 commentedPerc.push(this.commentedSec[ind] / this.getDuration());

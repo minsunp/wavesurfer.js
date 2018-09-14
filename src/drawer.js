@@ -352,7 +352,8 @@ export default class Drawer extends util.Observer {
      * Called when the commentedSec array is updated. Redraw timestamps.
      *
      * @abstract
-     * @param {number[]} arr List of pixels where comments were made on the waveform.
+     * @param {number[]} arr List of percent values where comments were made on
+     * the waveform: currentTime/totalTime
      */
     updateTimestamps(arr) {}
 

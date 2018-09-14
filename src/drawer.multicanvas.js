@@ -71,10 +71,11 @@ export default class MultiCanvas extends Drawer {
     /**
      * Added by MinSun:
      * Render the timestamps on this.timestamps element
-     * @param {number[]} arr List of pixels where comments were made on the waveform.
+     * @param {number[]} arr List of percent values where comments were made on
+     * the waveform: currentTime/totalTime
      */
     updateTimestamps(arr) {
-        const width = 5; // width of each timestamp
+        const width = 3; // width of each timestamp
         const x = 0; // start of a timestamp - dummy val.
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
         const endCanvas = Math.min(
@@ -97,7 +98,7 @@ export default class MultiCanvas extends Drawer {
                 timestampImg.style.marginTop = '-380px';
                 */
                 // Width of entire waveform (not just the visible part)
-                // Copy Paste from updateSize()
+                // Copied-Pasted from updateSize() - no idea how this works..
                 let canvasWidth =
                     this.maxCanvasWidth +
                     2 * Math.ceil(this.params.pixelRatio / 2);
@@ -109,8 +110,9 @@ export default class MultiCanvas extends Drawer {
                 pixelOffset = arr[ind] * canvasWidth;
                 console.log(canvasWidth);
                 console.log(arr[ind]);
-                entry.timesCtx.fillRect(pixelOffset, 0, 5, 20); // x,y,width,height
-                entry.timesCtx.fillStyle = '#aff0d5';
+                // * Always do fillStyle first before fillRect
+                entry.timesCtx.fillStyle = '#5F78FF';
+                entry.timesCtx.fillRect(pixelOffset, 0, 3, 15); // x,y,width,height
             }
         }
     }
