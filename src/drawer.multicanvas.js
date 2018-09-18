@@ -86,6 +86,13 @@ export default class MultiCanvas extends Drawer {
 
         for (i = startCanvas; i < endCanvas; i++) {
             const entry = this.canvases[i];
+            // Remove all timestamps
+            entry.timesCtx.clearRect(
+                0,
+                0,
+                entry.timesCtx.canvas.width,
+                entry.timesCtx.canvas.height
+            );
 
             let pixelOffset;
             for (let ind in arr) {
@@ -116,6 +123,7 @@ export default class MultiCanvas extends Drawer {
             }
         }
     }
+
     /**
      * Initialise the drawer
      */
@@ -335,6 +343,7 @@ export default class MultiCanvas extends Drawer {
         const lastEntry = this.canvases.pop();
         lastEntry.wave.parentElement.removeChild(lastEntry.wave);
         lastEntry.patientWave.parentElement.removeChild(lastEntry.patientWave);
+        lastEntry.times.parentElement.removeChild(lastEntry.times);
         if (this.hasProgressCanvas) {
             lastEntry.progress.parentElement.removeChild(lastEntry.progress);
             lastEntry.patientProgress.parentElement.removeChild(

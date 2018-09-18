@@ -394,10 +394,6 @@ export default class WaveSurfer extends util.Observer {
      * Division of task: client decides if/where the timestamps should be drawn,
      * and wavesurfer simply receives the decision and renders.
      *
-     * TODO: trigger wavesurfer to draw timestamps
-     * TODO: make sure that this is only called when commenting is first enabled,
-     * first disabled, or when comments are added/deleted.
-     *
      * @example wavesurfer.setCommentedSec(arr);
      */
     setCommentedSec(arr) {

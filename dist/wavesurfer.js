@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Fri Sep 14 2018 16:07:22 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Tue Sep 18 2018 16:22:27 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -819,6 +819,8 @@ var MultiCanvas = function (_Drawer) {
 
             for (i = startCanvas; i < endCanvas; i++) {
                 var entry = this.canvases[i];
+                // Remove all timestamps
+                entry.timesCtx.clearRect(0, 0, entry.timesCtx.canvas.width, entry.timesCtx.canvas.height);
 
                 var pixelOffset = void 0;
                 for (var ind in arr) {
@@ -839,11 +841,13 @@ var MultiCanvas = function (_Drawer) {
                     pixelOffset = arr[ind] * canvasWidth;
                     console.log(canvasWidth);
                     console.log(arr[ind]);
+                    // * Always do fillStyle first before fillRect
                     entry.timesCtx.fillStyle = '#5F78FF';
                     entry.timesCtx.fillRect(pixelOffset, 0, 3, 15); // x,y,width,height
                 }
             }
         }
+
         /**
          * Initialise the drawer
          */
@@ -1061,6 +1065,7 @@ var MultiCanvas = function (_Drawer) {
             var lastEntry = this.canvases.pop();
             lastEntry.wave.parentElement.removeChild(lastEntry.wave);
             lastEntry.patientWave.parentElement.removeChild(lastEntry.patientWave);
+            lastEntry.times.parentElement.removeChild(lastEntry.times);
             if (this.hasProgressCanvas) {
                 lastEntry.progress.parentElement.removeChild(lastEntry.progress);
                 lastEntry.patientProgress.parentElement.removeChild(lastEntry.patientProgress);
@@ -3321,10 +3326,6 @@ var WaveSurfer = function (_util$Observer) {
      *
      * Division of task: client decides if/where the timestamps should be drawn,
      * and wavesurfer simply receives the decision and renders.
-     *
-     * TODO: trigger wavesurfer to draw timestamps
-     * TODO: make sure that this is only called when commenting is first enabled,
-     * first disabled, or when comments are added/deleted.
      *
      * @example wavesurfer.setCommentedSec(arr);
      */
