@@ -61,11 +61,7 @@ export default class MultiCanvas extends Drawer {
         /** @private */
         this.progressWave = null; // doctor's progress part
         /** @private */
-        this.patientWave = null; // patient's part
-        /** @private */
         this.patientProgressWave = null; // patient's progress part
-        // <timestamps> DOM element
-        this.timestamps = null;
     }
 
     /**
@@ -156,15 +152,6 @@ export default class MultiCanvas extends Drawer {
                 // backgroundColor: this.params.progressBackgroundColor
             })
         );
-        this.patientWave = this.wrapper.appendChild(
-            this.style(document.createElement('wave'), {
-                display: 'block',
-                position: 'relative',
-                userSelect: 'none',
-                webkitUserSelect: 'none',
-                height: this.params.height + 'px'
-            })
-        );
         this.patientProgressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
                 position: 'absolute',
@@ -179,22 +166,6 @@ export default class MultiCanvas extends Drawer {
                 borderRightStyle: 'solid',
                 pointerEvents: 'none',
                 backgroundColor: this.params.progressBackgroundColor
-            })
-        );
-        this.timestamps = this.wrapper.appendChild(
-            this.style(document.createElement('timestamps'), {
-                position: 'relative',
-                zIndex: 3,
-                left: 0,
-                top: -this.params.height + 'px',
-                bottom: 0,
-                overflow: 'hidden',
-                // width: this.wrapper.clientWidth + 'px',
-                display: 'block', // this starts the timestamp canvas on a new line,
-                // so need to adjust top margin (-height) to pull it up.
-                boxSizing: 'border-box',
-                pointerEvents: 'none',
-                height: this.params.height + 'px'
             })
         );
 
@@ -286,7 +257,7 @@ export default class MultiCanvas extends Drawer {
         }
 
         // Default wave - for patient's part
-        entry.patientWave = this.patientWave.appendChild(
+        entry.patientWave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
                 zIndex: 2,
@@ -316,7 +287,7 @@ export default class MultiCanvas extends Drawer {
         }
 
         // Create canvas for rendering timestamps - copying default waves settings
-        entry.times = this.timestamps.appendChild(
+        entry.times = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
                 zIndex: 4,

@@ -577,7 +577,7 @@ export default class WaveSurfer extends util.Observer {
     getProgressPos() {
         return (
             Math.round(
-                this.backend.getPlayedPercents() * this.drawer.getThisWidth()
+                this.backend.getPlayedPercents() * this.drawer.getWidth()
             ) *
             (1 / this.params.pixelRatio)
         );

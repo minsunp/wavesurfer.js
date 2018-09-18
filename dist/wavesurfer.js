@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Tue Sep 18 2018 16:22:27 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Tue Sep 18 2018 17:26:09 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -792,11 +792,7 @@ var MultiCanvas = function (_Drawer) {
         /** @private */
         _this.progressWave = null; // doctor's progress part
         /** @private */
-        _this.patientWave = null; // patient's part
-        /** @private */
         _this.patientProgressWave = null; // patient's progress part
-        // <timestamps> DOM element
-        _this.timestamps = null;
         return _this;
     }
 
@@ -885,13 +881,6 @@ var MultiCanvas = function (_Drawer) {
                 pointerEvents: 'none'
                 // backgroundColor: this.params.progressBackgroundColor
             }));
-            this.patientWave = this.wrapper.appendChild(this.style(document.createElement('wave'), {
-                display: 'block',
-                position: 'relative',
-                userSelect: 'none',
-                webkitUserSelect: 'none',
-                height: this.params.height + 'px'
-            }));
             this.patientProgressWave = this.wrapper.appendChild(this.style(document.createElement('wave'), {
                 position: 'absolute',
                 zIndex: 3,
@@ -905,20 +894,6 @@ var MultiCanvas = function (_Drawer) {
                 borderRightStyle: 'solid',
                 pointerEvents: 'none',
                 backgroundColor: this.params.progressBackgroundColor
-            }));
-            this.timestamps = this.wrapper.appendChild(this.style(document.createElement('timestamps'), {
-                position: 'relative',
-                zIndex: 3,
-                left: 0,
-                top: -this.params.height + 'px',
-                bottom: 0,
-                overflow: 'hidden',
-                // width: this.wrapper.clientWidth + 'px',
-                display: 'block', // this starts the timestamp canvas on a new line,
-                // so need to adjust top margin (-height) to pull it up.
-                boxSizing: 'border-box',
-                pointerEvents: 'none',
-                height: this.params.height + 'px'
             }));
 
             this.addCanvas();
@@ -1011,7 +986,7 @@ var MultiCanvas = function (_Drawer) {
             }
 
             // Default wave - for patient's part
-            entry.patientWave = this.patientWave.appendChild(this.style(document.createElement('canvas'), {
+            entry.patientWave = this.wrapper.appendChild(this.style(document.createElement('canvas'), {
                 position: 'absolute',
                 zIndex: 2,
                 left: leftOffset + 'px',
@@ -1037,7 +1012,7 @@ var MultiCanvas = function (_Drawer) {
             }
 
             // Create canvas for rendering timestamps - copying default waves settings
-            entry.times = this.timestamps.appendChild(this.style(document.createElement('canvas'), {
+            entry.times = this.wrapper.appendChild(this.style(document.createElement('canvas'), {
                 position: 'absolute',
                 zIndex: 4,
                 left: leftOffset + 'px',
@@ -3533,7 +3508,7 @@ var WaveSurfer = function (_util$Observer) {
     }, {
         key: 'getProgressPos',
         value: function getProgressPos() {
-            return Math.round(this.backend.getPlayedPercents() * this.drawer.getThisWidth()) * (1 / this.params.pixelRatio);
+            return Math.round(this.backend.getPlayedPercents() * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
         }
 
         /**
