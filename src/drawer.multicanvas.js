@@ -82,7 +82,7 @@ export default class MultiCanvas extends Drawer {
 
         for (i = startCanvas; i < endCanvas; i++) {
             const entry = this.canvases[i];
-            // Remove all timestamps
+            // Remove all timestamps before drawing new ones.
             entry.timesCtx.clearRect(
                 0,
                 0,
@@ -445,12 +445,12 @@ export default class MultiCanvas extends Drawer {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
-     * @param {number[]} doctorsRangePix List of points that divide doctors' part and
-     * patient's speaking (in pixels)
-     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+     * @param {number[]} doctorsRangePerc List of points that divide doctors' part and
+     * patient's speaking (in percent)
+     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] percent.
      * The rest is patient speaking.
      */
-    drawBars(peaks, channelIndex, start, end, doctorsRangePix) {
+    drawBars(peaks, channelIndex, start, end, doctorsRangePerc) {
         return this.prepareDraw(
             peaks,
             channelIndex,
@@ -479,11 +479,37 @@ export default class MultiCanvas extends Drawer {
 
                 const first = start;
                 const last = end;
+
+                // MinSun: Start editing here
+                // First, convert seconds into pixel values
+                // Not sure how these values are significant here.
+                const width = 3; // width of each timestamp - dummy val.
+                const x = 0; // start of a timestamp - dummy val.
+                const startCanvas = Math.floor(x / this.maxCanvasWidth);
+                const endCanvas = Math.min(
+                    Math.ceil((x + width) / this.maxCanvasWidth) + 1,
+                    this.canvases.length
+                );
                 let i;
+                let canvasWidth;
+                for (i = startCanvas; i < endCanvas; i++) {
+                    const entry = this.canvases[i];
+                    canvasWidth =
+                        this.maxCanvasWidth +
+                        2 * Math.ceil(this.params.pixelRatio / 2);
+                    if (i == this.canvases.length - 1) {
+                        canvasWidth =
+                            this.width -
+                            this.maxCanvasWidth * (this.canvases.length - 1);
+                    }
+                }
+
+                let doctorsRangePix = [];
+                for (i = 0; i < doctorsRangePerc.length; i++) {
+                    doctorsRangePix.push(doctorsRangePerc[i] * canvasWidth);
+                }
 
                 // Draw bars one by one
-                // MinSun: start editing here. doctorsRangePix = [1.2, 2, 5, 10, 15, 18]
-
                 // TRUE if doctorsRangePix[drInx] ends the doctor's range
                 let inDoctorsRange = false;
                 let drInd = 0;

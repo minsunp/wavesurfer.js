@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Tue Sep 18 2018 17:48:35 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Sep 19 2018 12:03:00 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -372,20 +372,20 @@ var Drawer = function (_util$Observer) {
          * should be rendered
          * @param {number} end The x-offset of the end of the area that should be
          * rendered
-         * @param {number[]} doctorsRangePix List of points that divide doctors' part and
-         * patient's speaking (in pixels)
-         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+         * @param {number[]} doctorsRangePerc List of points that divide doctors' part and
+         * patient's speaking (in percent)
+         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] percent.
          * The rest is patient speaking.
          */
 
     }, {
         key: 'drawPeaks',
-        value: function drawPeaks(peaks, length, start, end, doctorsRangePix) {
+        value: function drawPeaks(peaks, length, start, end, doctorsRangePerc) {
             if (!this.setWidth(length)) {
                 this.clearWave();
             }
 
-            this.params.barWidth ? this.drawBars(peaks, 0, start, end, doctorsRangePix) : this.drawWave(peaks, 0, start, end);
+            this.params.barWidth ? this.drawBars(peaks, 0, start, end, doctorsRangePerc) : this.drawWave(peaks, 0, start, end);
         }
 
         /**
@@ -636,15 +636,15 @@ var Drawer = function (_util$Observer) {
          * should be rendered
          * @param {number} end The x-offset of the end of the area that should be
          * rendered
-         * @param {number[]} doctorsRangePix List of points that divide doctors' part and
-         * patient's speaking (in pixels)
-         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+         * @param {number[]} doctorsRangePerc List of points that divide doctors' part and
+         * patient's speaking (in percent)
+         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] percent.
          * The rest is patient speaking.
          */
 
     }, {
         key: 'drawBars',
-        value: function drawBars(peaks, channelIndex, start, end, doctorsRangePix) {}
+        value: function drawBars(peaks, channelIndex, start, end, doctorsRangePerc) {}
 
         /**
          * Draw a waveform
@@ -815,7 +815,7 @@ var MultiCanvas = function (_Drawer) {
 
             for (i = startCanvas; i < endCanvas; i++) {
                 var entry = this.canvases[i];
-                // Remove all timestamps
+                // Remove all timestamps before drawing new ones.
                 entry.timesCtx.clearRect(0, 0, entry.timesCtx.canvas.width, entry.timesCtx.canvas.height);
 
                 var pixelOffset = void 0;
@@ -1157,15 +1157,15 @@ var MultiCanvas = function (_Drawer) {
          * should be rendered
          * @param {number} end The x-offset of the end of the area that should be
          * rendered
-         * @param {number[]} doctorsRangePix List of points that divide doctors' part and
-         * patient's speaking (in pixels)
-         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+         * @param {number[]} doctorsRangePerc List of points that divide doctors' part and
+         * patient's speaking (in percent)
+         * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] percent.
          * The rest is patient speaking.
          */
 
     }, {
         key: 'drawBars',
-        value: function drawBars(peaks, channelIndex, start, end, doctorsRangePix) {
+        value: function drawBars(peaks, channelIndex, start, end, doctorsRangePerc) {
             var _this4 = this;
 
             return this.prepareDraw(peaks, channelIndex, start, // MinSun: not sure how this start/end will be used in prepareDraw
@@ -1193,11 +1193,30 @@ var MultiCanvas = function (_Drawer) {
 
                 var first = start;
                 var last = end;
+
+                // MinSun: Start editing here
+                // First, convert seconds into pixel values
+                // Not sure how these values are significant here.
+                var width = 3; // width of each timestamp - dummy val.
+                var x = 0; // start of a timestamp - dummy val.
+                var startCanvas = Math.floor(x / _this4.maxCanvasWidth);
+                var endCanvas = Math.min(Math.ceil((x + width) / _this4.maxCanvasWidth) + 1, _this4.canvases.length);
                 var i = void 0;
+                var canvasWidth = void 0;
+                for (i = startCanvas; i < endCanvas; i++) {
+                    var entry = _this4.canvases[i];
+                    canvasWidth = _this4.maxCanvasWidth + 2 * Math.ceil(_this4.params.pixelRatio / 2);
+                    if (i == _this4.canvases.length - 1) {
+                        canvasWidth = _this4.width - _this4.maxCanvasWidth * (_this4.canvases.length - 1);
+                    }
+                }
+
+                var doctorsRangePix = [];
+                for (i = 0; i < doctorsRangePerc.length; i++) {
+                    doctorsRangePix.push(doctorsRangePerc[i] * canvasWidth);
+                }
 
                 // Draw bars one by one
-                // MinSun: start editing here. doctorsRangePix = [1.2, 2, 5, 10, 15, 18]
-
                 // TRUE if doctorsRangePix[drInx] ends the doctor's range
                 var inDoctorsRange = false;
                 var drInd = 0;
@@ -3497,7 +3516,7 @@ var WaveSurfer = function (_util$Observer) {
     }, {
         key: 'percentToProgressPos',
         value: function percentToProgressPos(percent) {
-            return Math.round(percent * this.drawer.getWidth()) * (1 / this.params.pixelRatio);
+            return Math.round(percent * this.drawer.getThisWidth()) * (1 / this.params.pixelRatio);
         }
 
         /**
@@ -4230,14 +4249,13 @@ var WaveSurfer = function (_util$Observer) {
                 peaks = this.backend.getPeaks(width, start, end);
                 // MinSun: need to provide real doctorsRange value here b/c
                 // drawBuffer() is used everywhere and I don't want to change everything.
-                // Let's put dummy value for now.
-                // const doctorsRangeSec = [0, 2, 5, 10, 15, 18]; // change to: this.params.doctorsRangeSec
-                // First convert seconds into pixels!
-                var doctorsRangePix = [];
+
+                // Converting seconds into percentage value here
+                var doctorsRangePerc = [];
                 for (var ind = 0; ind < this.params.doctorsRangeSec.length; ind++) {
-                    doctorsRangePix.push(this.percentToProgressPos(this.params.doctorsRangeSec[ind] / this.getDuration()));
+                    doctorsRangePerc.push(this.params.doctorsRangeSec[ind] / this.getDuration());
                 }
-                this.drawer.drawPeaks(peaks, width, start, end, doctorsRangePix);
+                this.drawer.drawPeaks(peaks, width, start, end, doctorsRangePerc);
             }
             this.fireEvent('redraw', peaks, width);
         }

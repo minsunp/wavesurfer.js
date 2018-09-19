@@ -149,18 +149,18 @@ export default class Drawer extends util.Observer {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
-     * @param {number[]} doctorsRangePix List of points that divide doctors' part and
-     * patient's speaking (in pixels)
-     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+     * @param {number[]} doctorsRangePerc List of points that divide doctors' part and
+     * patient's speaking (in percent)
+     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] percent.
      * The rest is patient speaking.
      */
-    drawPeaks(peaks, length, start, end, doctorsRangePix) {
+    drawPeaks(peaks, length, start, end, doctorsRangePerc) {
         if (!this.setWidth(length)) {
             this.clearWave();
         }
 
         this.params.barWidth
-            ? this.drawBars(peaks, 0, start, end, doctorsRangePix)
+            ? this.drawBars(peaks, 0, start, end, doctorsRangePerc)
             : this.drawWave(peaks, 0, start, end);
     }
 
@@ -376,12 +376,12 @@ export default class Drawer extends util.Observer {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
-     * @param {number[]} doctorsRangePix List of points that divide doctors' part and
-     * patient's speaking (in pixels)
-     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] pixels.
+     * @param {number[]} doctorsRangePerc List of points that divide doctors' part and
+     * patient's speaking (in percent)
+     * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18] percent.
      * The rest is patient speaking.
      */
-    drawBars(peaks, channelIndex, start, end, doctorsRangePix) {}
+    drawBars(peaks, channelIndex, start, end, doctorsRangePerc) {}
 
     /**
      * Draw a waveform
