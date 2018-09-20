@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Wed Sep 19 2018 12:03:00 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Thu Sep 20 2018 17:23:50 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -793,6 +793,7 @@ var MultiCanvas = function (_Drawer) {
         _this.progressWave = null; // doctor's progress part
         /** @private */
         _this.patientProgressWave = null; // patient's progress part
+        _this.time = null;
         return _this;
     }
 
@@ -891,11 +892,15 @@ var MultiCanvas = function (_Drawer) {
                 width: '0',
                 display: 'none',
                 boxSizing: 'border-box',
-                borderRightStyle: 'solid',
+                // borderRightStyle: 'solid',
                 pointerEvents: 'none',
                 backgroundColor: this.params.progressBackgroundColor
             }));
-
+            this.timeText = document.createTextNode('First check position');
+            this.timeEl = document.createElement('div');
+            this.timeEl.appendChild(this.timeText);
+            this.wrapper.appendChild(this.timeEl);
+            this.timeEl.style.fontSize = '10px';
             this.addCanvas();
             this.updateCursor();
         }
@@ -1545,10 +1550,10 @@ var MultiCanvas = function (_Drawer) {
         key: 'setFillStyles',
         value: function setFillStyles(entry) {
             entry.waveCtx.fillStyle = this.params.waveColor;
-            entry.patientWaveCtx.fillStyle = '#aff0d5'; // lighter/darker blue
+            entry.patientWaveCtx.fillStyle = '#313c77'; // lighter/darker blue
             if (this.hasProgressCanvas) {
                 entry.progressCtx.fillStyle = this.params.progressColor;
-                entry.patientProgressCtx.fillStyle = '#36d995'; // blue
+                entry.patientProgressCtx.fillStyle = '#5F78FF'; // blue
             }
         }
 
@@ -1580,6 +1585,7 @@ var MultiCanvas = function (_Drawer) {
         value: function updateProgress(position) {
             this.style(this.progressWave, { width: position + 'px' });
             this.style(this.patientProgressWave, { width: position + 'px' });
+            this.timeText = document.createTextNode('Does it change?');
         }
     }]);
 

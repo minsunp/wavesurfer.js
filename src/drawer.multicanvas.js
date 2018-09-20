@@ -62,6 +62,7 @@ export default class MultiCanvas extends Drawer {
         this.progressWave = null; // doctor's progress part
         /** @private */
         this.patientProgressWave = null; // patient's progress part
+        this.time = null;
     }
 
     /**
@@ -163,12 +164,21 @@ export default class MultiCanvas extends Drawer {
                 width: '0',
                 display: 'none',
                 boxSizing: 'border-box',
-                borderRightStyle: 'solid',
+                // borderRightStyle: 'solid',
                 pointerEvents: 'none',
                 backgroundColor: this.params.progressBackgroundColor
             })
         );
-
+        this.currTimeText = document.createTextNode('First check position');
+        this.totalTimeText = document.createTextNode('Add total time');
+        this.currTime = document.createElement('currTime');
+        this.totalTime = document.createElement('totalTime');
+        this.currTime.appendChild(this.currTimeText);
+        this.totalTime.appendChild(this.totalTimeText);
+        this.wrapper.appendChild(this.currTime);
+        this.wrapper.appendChild(this.totalTime);
+        this.currTime.style.fontSize = '10px';
+        this.totalTime.style.fontSize = '10px';
         this.addCanvas();
         this.updateCursor();
     }
@@ -878,10 +888,10 @@ export default class MultiCanvas extends Drawer {
      */
     setFillStyles(entry) {
         entry.waveCtx.fillStyle = this.params.waveColor;
-        entry.patientWaveCtx.fillStyle = '#aff0d5'; // lighter/darker blue
+        entry.patientWaveCtx.fillStyle = '#313c77'; // lighter/darker blue
         if (this.hasProgressCanvas) {
             entry.progressCtx.fillStyle = this.params.progressColor;
-            entry.patientProgressCtx.fillStyle = '#36d995'; // blue
+            entry.patientProgressCtx.fillStyle = '#5F78FF'; // blue
         }
     }
 
@@ -907,5 +917,7 @@ export default class MultiCanvas extends Drawer {
     updateProgress(position) {
         this.style(this.progressWave, { width: position + 'px' });
         this.style(this.patientProgressWave, { width: position + 'px' });
+        // MinSun: remove existing text node
+        this.currTimeText = document.createTextNode('Does it change?');
     }
 }
