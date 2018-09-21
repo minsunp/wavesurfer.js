@@ -310,7 +310,7 @@ export default class Drawer extends util.Observer {
      *
      * @param {number} progress From 0 to 1
      */
-    progress(progress) {
+    progress(progress, duration) {
         const minPxDelta = 1 / this.params.pixelRatio;
         const pos = Math.round(progress * this.width) * minPxDelta;
 
@@ -321,7 +321,9 @@ export default class Drawer extends util.Observer {
                 const newPos = ~~(this.wrapper.scrollWidth * progress);
                 this.recenterOnPosition(newPos);
             }
-            this.updateProgress(pos);
+            // console.log(progress);
+            // console.log(this.params.duration);
+            this.updateProgress(pos, progress * duration, duration);
         }
     }
 
@@ -410,6 +412,8 @@ export default class Drawer extends util.Observer {
      *
      * @abstract
      * @param {number} position X-Offset of progress position in pixels
+     * @param {number} curr Current time in seconds
+     * @param {number} duration Duration of entire audio file in seconds
      */
-    updateProgress(position) {}
+    updateProgress(position, curr, duration) {}
 }

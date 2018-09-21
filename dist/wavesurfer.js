@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Thu Sep 20 2018 17:23:50 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Fri Sep 21 2018 14:04:48 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -558,7 +558,7 @@ var Drawer = function (_util$Observer) {
 
     }, {
         key: 'progress',
-        value: function progress(_progress) {
+        value: function progress(_progress, duration) {
             var minPxDelta = 1 / this.params.pixelRatio;
             var pos = Math.round(_progress * this.width) * minPxDelta;
 
@@ -569,7 +569,9 @@ var Drawer = function (_util$Observer) {
                     var newPos = ~~(this.wrapper.scrollWidth * _progress);
                     this.recenterOnPosition(newPos);
                 }
-                this.updateProgress(pos);
+                // console.log(progress);
+                // console.log(this.params.duration);
+                this.updateProgress(pos, _progress * duration, duration);
             }
         }
 
@@ -679,11 +681,13 @@ var Drawer = function (_util$Observer) {
          *
          * @abstract
          * @param {number} position X-Offset of progress position in pixels
+         * @param {number} curr Current time in seconds
+         * @param {number} duration Duration of entire audio file in seconds
          */
 
     }, {
         key: 'updateProgress',
-        value: function updateProgress(position) {}
+        value: function updateProgress(position, curr, duration) {}
     }]);
 
     return Drawer;
@@ -793,7 +797,12 @@ var MultiCanvas = function (_Drawer) {
         _this.progressWave = null; // doctor's progress part
         /** @private */
         _this.patientProgressWave = null; // patient's progress part
-        _this.time = null;
+        // Elements for displaying time on cursor
+        _this.currTimeText = null;
+        _this.totalTimeText = null;
+        _this.currTime = null;
+        _this.totalTime = null;
+        _this.durationRendered = false;
         return _this;
     }
 
@@ -836,8 +845,6 @@ var MultiCanvas = function (_Drawer) {
                         canvasWidth = this.width - this.maxCanvasWidth * (this.canvases.length - 1);
                     }
                     pixelOffset = arr[ind] * canvasWidth;
-                    console.log(canvasWidth);
-                    console.log(arr[ind]);
                     // * Always do fillStyle first before fillRect
                     entry.timesCtx.fillStyle = '#5F78FF';
                     entry.timesCtx.fillRect(pixelOffset, 0, 3, 15); // x,y,width,height
@@ -896,11 +903,20 @@ var MultiCanvas = function (_Drawer) {
                 pointerEvents: 'none',
                 backgroundColor: this.params.progressBackgroundColor
             }));
-            this.timeText = document.createTextNode('First check position');
-            this.timeEl = document.createElement('div');
-            this.timeEl.appendChild(this.timeText);
-            this.wrapper.appendChild(this.timeEl);
-            this.timeEl.style.fontSize = '10px';
+            this.currTime = document.createElement('currTime');
+            this.totalTime = document.createElement('totalTime');
+            this.wrapper.appendChild(this.currTime);
+            this.wrapper.appendChild(this.totalTime);
+            this.currTime.style.fontSize = '13px';
+            this.currTime.style.color = '#ffffff';
+            this.currTime.style.position = 'absolute';
+            this.currTime.style.left = '-60px';
+            this.currTime.style.top = '150px';
+            this.totalTime.style.fontSize = '13px';
+            this.totalTime.style.color = '#5F78FF';
+            this.totalTime.style.position = 'absolute';
+            this.totalTime.style.left = '8px';
+            this.totalTime.style.top = '150px';
             this.addCanvas();
             this.updateCursor();
         }
@@ -1578,14 +1594,35 @@ var MultiCanvas = function (_Drawer) {
          * Render the new progress
          *
          * @param {number} position X-Offset of progress position in pixels
+         * @param {number} curr Current time in seconds
+         * @param {number} duration Duration of entire audio file in seconds
          */
 
     }, {
         key: 'updateProgress',
-        value: function updateProgress(position) {
+        value: function updateProgress(position, curr, duration) {
             this.style(this.progressWave, { width: position + 'px' });
             this.style(this.patientProgressWave, { width: position + 'px' });
-            this.timeText = document.createTextNode('Does it change?');
+            // Remove existing text node from currTime, then add a new one
+            if (this.currTime.firstChild) {
+                this.currTime.removeChild(this.currTime.firstChild);
+            }
+            var currHr = Math.floor(curr / 3600);
+            var currMin = Math.floor(curr / 60);
+            var currSec = Math.floor(curr % 60);
+            this.currTimeText = document.createTextNode(('0' + currHr).slice(-2) + ':' + ('0' + currMin).slice(-2) + ':' + ('0' + currSec).slice(-2));
+            this.currTime.appendChild(this.currTimeText);
+            // Render duration just once and no more
+            if (!this.durationRendered) {
+                var durHr = Math.floor(duration / 3600);
+                var durMin = Math.floor(duration / 60);
+                var durSec = Math.floor(duration % 60);
+                this.totalTimeText = document.createTextNode(('0' + durHr).slice(-2) + ':' + ('0' + durMin).slice(-2) + ':' + ('0' + durSec).slice(-2));
+                this.totalTime.appendChild(this.totalTimeText);
+                this.durationRendered = true;
+            }
+            this.currTime.style.left = position - 60 + 'px';
+            this.totalTime.style.left = position + 8 + 'px';
         }
     }]);
 
@@ -3007,6 +3044,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18]
  * seconds. The rest is patient speaking.
  * @property {array} commentedSec=[] List of seconds where the comments were made
+ * @property {number} duration=60 Duration of the entire audio file in seconds
  */
 
 /**
@@ -3209,7 +3247,8 @@ var WaveSurfer = function (_util$Observer) {
             splitChannels: false,
             waveColor: '#999',
             xhr: {},
-            doctorsRangeSec: [0, 2, 5, 10, 15, 18]
+            doctorsRangeSec: [0, 2, 5, 10, 15, 18],
+            duration: 60 // Duration of the entire audio file in second
         };
         _this.backends = {
             MediaElement: _mediaelement2.default,
@@ -3560,7 +3599,7 @@ var WaveSurfer = function (_util$Observer) {
             this.drawer.on('redraw', function () {
                 // MinSun: progress waveform updated here
                 _this5.drawBuffer();
-                _this5.drawer.progress(_this5.backend.getPlayedPercents());
+                _this5.drawer.progress(_this5.backend.getPlayedPercents(), _this5.getDuration());
             });
 
             // Click-to-seek
@@ -3619,7 +3658,7 @@ var WaveSurfer = function (_util$Observer) {
             });
 
             this.backend.on('audioprocess', function (time) {
-                _this6.drawer.progress(_this6.backend.getPlayedPercents());
+                _this6.drawer.progress(_this6.backend.getPlayedPercents(), _this6.getDuration());
                 _this6.fireEvent('audioprocess', time);
             });
         }
@@ -3842,7 +3881,7 @@ var WaveSurfer = function (_util$Observer) {
             var oldScrollParent = this.params.scrollParent;
             this.params.scrollParent = false;
             this.backend.seekTo(progress * this.getDuration());
-            this.drawer.progress(progress);
+            this.drawer.progress(progress, this.getDuration());
 
             if (!paused) {
                 this.backend.play();
@@ -3862,7 +3901,7 @@ var WaveSurfer = function (_util$Observer) {
         value: function stop() {
             this.pause();
             this.seekTo(0);
-            this.drawer.progress(0);
+            this.drawer.progress(0, this.getDuration());
         }
 
         /**
@@ -4232,7 +4271,6 @@ var WaveSurfer = function (_util$Observer) {
             var end = Math.max(start + parentWidth, width); // end of canvas
             // Fill container
             if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
-                console.log('does it get here?');
                 // MinSun: if waveform is not scrollable
                 width = parentWidth;
                 start = 0;
@@ -4289,7 +4327,7 @@ var WaveSurfer = function (_util$Observer) {
             }
 
             this.drawBuffer();
-            this.drawer.progress(this.backend.getPlayedPercents());
+            this.drawer.progress(this.backend.getPlayedPercents(), this.getDuration());
 
             this.drawer.recenter(this.getCurrentTime() / this.getDuration());
             this.fireEvent('zoom', pxPerSec);
@@ -4681,7 +4719,7 @@ var WaveSurfer = function (_util$Observer) {
             this.isReady = false;
             this.cancelAjax();
             this.clearTmpEvents();
-            this.drawer.progress(0);
+            this.drawer.progress(0, this.getDuration());
             this.drawer.setWidth(0);
             // MinSun: how does this work? with just two parameters?
             this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);

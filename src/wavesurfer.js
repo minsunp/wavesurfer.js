@@ -99,6 +99,7 @@ import PeakCache from './peakcache';
  * EX) [0, 2, 5, 10, 15, 18] means the doctor spoke [0, 2], [5, 10], [15, 18]
  * seconds. The rest is patient speaking.
  * @property {array} commentedSec=[] List of seconds where the comments were made
+ * @property {number} duration=60 Duration of the entire audio file in seconds
  */
 
 /**
@@ -219,7 +220,8 @@ export default class WaveSurfer extends util.Observer {
         splitChannels: false,
         waveColor: '#999',
         xhr: {},
-        doctorsRangeSec: [0, 2, 5, 10, 15, 18]
+        doctorsRangeSec: [0, 2, 5, 10, 15, 18],
+        duration: 60 // Duration of the entire audio file in second
     };
 
     /** @private */
@@ -602,7 +604,10 @@ export default class WaveSurfer extends util.Observer {
         this.drawer.on('redraw', () => {
             // MinSun: progress waveform updated here
             this.drawBuffer();
-            this.drawer.progress(this.backend.getPlayedPercents());
+            this.drawer.progress(
+                this.backend.getPlayedPercents(),
+                this.getDuration()
+            );
         });
 
         // Click-to-seek
@@ -651,7 +656,10 @@ export default class WaveSurfer extends util.Observer {
         this.backend.on('pause', () => this.fireEvent('pause'));
 
         this.backend.on('audioprocess', time => {
-            this.drawer.progress(this.backend.getPlayedPercents());
+            this.drawer.progress(
+                this.backend.getPlayedPercents(),
+                this.getDuration()
+            );
             this.fireEvent('audioprocess', time);
         });
     }
@@ -834,7 +842,7 @@ export default class WaveSurfer extends util.Observer {
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
-        this.drawer.progress(progress);
+        this.drawer.progress(progress, this.getDuration());
 
         if (!paused) {
             this.backend.play();
@@ -851,7 +859,7 @@ export default class WaveSurfer extends util.Observer {
     stop() {
         this.pause();
         this.seekTo(0);
-        this.drawer.progress(0);
+        this.drawer.progress(0, this.getDuration());
     }
 
     /**
@@ -1153,7 +1161,6 @@ export default class WaveSurfer extends util.Observer {
             this.params.fillParent &&
             (!this.params.scrollParent || nominalWidth < parentWidth)
         ) {
-            console.log('does it get here?');
             // MinSun: if waveform is not scrollable
             width = parentWidth;
             start = 0;
@@ -1222,7 +1229,10 @@ export default class WaveSurfer extends util.Observer {
         }
 
         this.drawBuffer();
-        this.drawer.progress(this.backend.getPlayedPercents());
+        this.drawer.progress(
+            this.backend.getPlayedPercents(),
+            this.getDuration()
+        );
 
         this.drawer.recenter(this.getCurrentTime() / this.getDuration());
         this.fireEvent('zoom', pxPerSec);
@@ -1573,7 +1583,7 @@ export default class WaveSurfer extends util.Observer {
         this.isReady = false;
         this.cancelAjax();
         this.clearTmpEvents();
-        this.drawer.progress(0);
+        this.drawer.progress(0, this.getDuration());
         this.drawer.setWidth(0);
         // MinSun: how does this work? with just two parameters?
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);

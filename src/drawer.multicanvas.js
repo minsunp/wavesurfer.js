@@ -62,7 +62,12 @@ export default class MultiCanvas extends Drawer {
         this.progressWave = null; // doctor's progress part
         /** @private */
         this.patientProgressWave = null; // patient's progress part
-        this.time = null;
+        // Elements for displaying time on cursor
+        this.currTimeText = null;
+        this.totalTimeText = null;
+        this.currTime = null;
+        this.totalTime = null;
+        this.durationRendered = false;
     }
 
     /**
@@ -112,8 +117,6 @@ export default class MultiCanvas extends Drawer {
                         this.maxCanvasWidth * (this.canvases.length - 1);
                 }
                 pixelOffset = arr[ind] * canvasWidth;
-                console.log(canvasWidth);
-                console.log(arr[ind]);
                 // * Always do fillStyle first before fillRect
                 entry.timesCtx.fillStyle = '#5F78FF';
                 entry.timesCtx.fillRect(pixelOffset, 0, 3, 15); // x,y,width,height
@@ -169,16 +172,20 @@ export default class MultiCanvas extends Drawer {
                 backgroundColor: this.params.progressBackgroundColor
             })
         );
-        this.currTimeText = document.createTextNode('First check position');
-        this.totalTimeText = document.createTextNode('Add total time');
         this.currTime = document.createElement('currTime');
         this.totalTime = document.createElement('totalTime');
-        this.currTime.appendChild(this.currTimeText);
-        this.totalTime.appendChild(this.totalTimeText);
         this.wrapper.appendChild(this.currTime);
         this.wrapper.appendChild(this.totalTime);
-        this.currTime.style.fontSize = '10px';
-        this.totalTime.style.fontSize = '10px';
+        this.currTime.style.fontSize = '13px';
+        this.currTime.style.color = '#ffffff';
+        this.currTime.style.position = 'absolute';
+        this.currTime.style.left = '-60px';
+        this.currTime.style.top = '150px';
+        this.totalTime.style.fontSize = '13px';
+        this.totalTime.style.color = '#5F78FF';
+        this.totalTime.style.position = 'absolute';
+        this.totalTime.style.left = '8px';
+        this.totalTime.style.top = '150px';
         this.addCanvas();
         this.updateCursor();
     }
@@ -913,11 +920,43 @@ export default class MultiCanvas extends Drawer {
      * Render the new progress
      *
      * @param {number} position X-Offset of progress position in pixels
+     * @param {number} curr Current time in seconds
+     * @param {number} duration Duration of entire audio file in seconds
      */
-    updateProgress(position) {
+    updateProgress(position, curr, duration) {
         this.style(this.progressWave, { width: position + 'px' });
         this.style(this.patientProgressWave, { width: position + 'px' });
-        // MinSun: remove existing text node
-        this.currTimeText = document.createTextNode('Does it change?');
+        // Remove existing text node from currTime, then add a new one
+        if (this.currTime.firstChild) {
+            this.currTime.removeChild(this.currTime.firstChild);
+        }
+        let currHr = Math.floor(curr / 3600);
+        let currMin = Math.floor(curr / 60);
+        let currSec = Math.floor(curr % 60);
+        this.currTimeText = document.createTextNode(
+            ('0' + currHr).slice(-2) +
+                ':' +
+                ('0' + currMin).slice(-2) +
+                ':' +
+                ('0' + currSec).slice(-2)
+        );
+        this.currTime.appendChild(this.currTimeText);
+        // Render duration just once and no more
+        if (!this.durationRendered) {
+            let durHr = Math.floor(duration / 3600);
+            let durMin = Math.floor(duration / 60);
+            let durSec = Math.floor(duration % 60);
+            this.totalTimeText = document.createTextNode(
+                ('0' + durHr).slice(-2) +
+                    ':' +
+                    ('0' + durMin).slice(-2) +
+                    ':' +
+                    ('0' + durSec).slice(-2)
+            );
+            this.totalTime.appendChild(this.totalTimeText);
+            this.durationRendered = true;
+        }
+        this.currTime.style.left = position - 60 + 'px';
+        this.totalTime.style.left = position + 8 + 'px';
     }
 }
