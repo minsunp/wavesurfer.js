@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Fri Sep 21 2018 14:04:48 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Wed Sep 26 2018 12:13:06 GMT-0400 (EDT))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -803,6 +803,9 @@ var MultiCanvas = function (_Drawer) {
         _this.currTime = null;
         _this.totalTime = null;
         _this.durationRendered = false;
+        // Element for metadata
+        _this.metadata = null;
+        _this.metadataText = null;
         return _this;
     }
 

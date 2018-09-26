@@ -68,6 +68,9 @@ export default class MultiCanvas extends Drawer {
         this.currTime = null;
         this.totalTime = null;
         this.durationRendered = false;
+        // Element for metadata
+        this.metadata = null;
+        this.metadataText = null;
     }
 
     /**
