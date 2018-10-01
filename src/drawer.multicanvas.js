@@ -583,6 +583,9 @@ export default class MultiCanvas extends Drawer {
         if (!ctx) {
             return;
         }
+        if (height == 0) {
+            height = 1;
+        }
         ctx.fillRect(x, y, width, height);
     }
 
