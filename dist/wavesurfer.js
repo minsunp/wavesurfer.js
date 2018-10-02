@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.0.6 (Thu Jul 19 2018 22:44:23 GMT-0400 (EDT))
+ * wavesurfer.js 2.0.6 (Tue Oct 02 2018 13:20:28 GMT-0400 (Eastern Daylight Time))
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -122,8 +122,7 @@ return /******/ (function(modules) { // webpackBootstrap
  * @param {Boolean} whether to execute at the beginning (`false`)
  * @api public
  */
-
-module.exports = function debounce(func, wait, immediate){
+function debounce(func, wait, immediate){
   var timeout, args, context, timestamp, result;
   if (null == wait) wait = 100;
 
@@ -174,6 +173,11 @@ module.exports = function debounce(func, wait, immediate){
 
   return debounced;
 };
+
+// Adds compatibility for ES modules
+debounce.debounce = debounce;
+
+module.exports = debounce;
 
 
 /***/ }),
@@ -1255,6 +1259,9 @@ var MultiCanvas = function (_Drawer) {
         value: function fillRectToContext(ctx, x, y, width, height) {
             if (!ctx) {
                 return;
+            }
+            if (height == 0) {
+                height = 1;
             }
             ctx.fillRect(x, y, width, height);
         }
